@@ -29,9 +29,9 @@ pub enum BidScore {
 }
 
 impl BidScore {
-	pub fn required_points(self) -> usize {
+	pub fn required_points(self) -> Option<usize> {
 		use BidScore::*;
-		match self {
+		Some(match self {
 			_80 => 80,
 			_90 => 90,
 			_100 => 100,
@@ -43,24 +43,28 @@ impl BidScore {
 			_160 => 160,
 			_170 => 170,
 			_180 => 180,
-			Capot => 250,
-		}
+			Capot => return None,
+		})
 	}
 
 	pub fn points(
 		self,
 		taking_team_points: usize,
 		def_team_points: usize,
+		taking_team_capot: bool,
 		coinche_state: CoincheState,
 	) -> (usize, usize) {
-		let required_points = self.required_points();
-		match (taking_team_points > required_points, coinche_state) {
-			(true, CoincheState::No) => (required_points, def_team_points),
-			(true, CoincheState::Coinche { .. }) => (required_points * 2, 0),
-			(true, CoincheState::Surcoinche { .. }) => (required_points * 4, 0),
-			(false, CoincheState::No) => (0, 160 + required_points),
-			(false, CoincheState::Coinche { .. }) => (0, 160 + required_points * 2),
-			(false, CoincheState::Surcoinche { .. }) => (0, 160 + required_points * 4),
+		let (success, points_base) = match self.required_points() {
+			Some(required_points) => (taking_team_points > required_points, required_points),
+			None => (taking_team_capot, 250),
+		};
+		match (success, coinche_state) {
+			(true, CoincheState::No) => (points_base, def_team_points),
+			(true, CoincheState::Coinche { .. }) => (points_base * 2, 0),
+			(true, CoincheState::Surcoinche { .. }) => (points_base * 4, 0),
+			(false, CoincheState::No) => (0, 160 + points_base),
+			(false, CoincheState::Coinche { .. }) => (0, 160 + points_base * 2),
+			(false, CoincheState::Surcoinche { .. }) => (0, 160 + points_base * 4),
 		}
 	}
 }

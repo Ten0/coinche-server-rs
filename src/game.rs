@@ -154,17 +154,22 @@ impl Game {
 		if let GameState::Running(running) = &self.game_state {
 			if running.tricks.len() == (32 / 4) {
 				let mut team_points: [f64; 2] = [0., 0.];
+				let mut team_capot: [bool; 2] = [true, true];
 				for trick in running.tricks.iter() {
-					team_points[Player::team(trick.winner_id) as usize] +=
+					let winning_team_id = Player::team(trick.winner_id);
+					team_points[winning_team_id as usize] +=
 						trick.cards.iter().map(|c| c.points(running.bid.trump)).sum::<f64>();
+					team_capot[!winning_team_id as usize] = false;
 				}
 				let taking_team_points = team_points[running.team as usize].floor() as usize;
 				let def_team_points = team_points[!running.team as usize].floor() as usize;
-				let (taking_points, def_points) =
-					running
-						.bid
-						.score
-						.points(taking_team_points, def_team_points, running.coinche_state);
+				let taking_team_capot = team_capot[running.team as usize];
+				let (taking_points, def_points) = running.bid.score.points(
+					taking_team_points,
+					def_team_points,
+					taking_team_capot,
+					running.coinche_state,
+				);
 				self.points[running.team as usize] += taking_points;
 				self.points[!running.team as usize] += def_points;
 				self.last_round_points[running.team as usize] = taking_points;
