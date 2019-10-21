@@ -1,8 +1,9 @@
 use coinche::*;
 
-fn main() -> coinche::Result<()> {
-	server::start_server().join().unwrap();
-	Ok(())
+fn main() {
+	let server_thread = server::start_server();
+	println!("Server listening on 0.0.0.0:3000");
+	server_thread.join().unwrap();
 }
 
 #[cfg(test)]
