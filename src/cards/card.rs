@@ -73,7 +73,7 @@ impl Value {
 
 //TODO: debug still relevant? It was used to print a vec of cards.
 /// An unnamed tuple with Value and Suit.
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Ord, PartialOrd, Hash)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Ord, PartialOrd, Hash, Serialize)]
 pub struct Card {
 	pub value: Value,
 	pub suit: Suit,
@@ -89,14 +89,5 @@ impl Card {
 impl fmt::Display for Card {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}{}", self.value.as_char(), self.suit.as_char())
-	}
-}
-
-impl serde::Serialize for Card {
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where
-		S: serde::Serializer,
-	{
-		<String as serde::Serialize>::serialize(&self.to_string(), serializer)
 	}
 }
