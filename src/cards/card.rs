@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt;
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Ord, PartialOrd, Hash, Serialize, Deserialize)]
@@ -55,6 +56,19 @@ impl Value {
 			Value::Ace => 'A',
 		}
 	}
+
+	pub fn cmp_trump(&self, other: &Value) -> Ordering {
+		use Value::*;
+		match (self, other) {
+			(Jack, Jack) => Ordering::Equal,
+			(Jack, _) => Ordering::Greater,
+			(_, Jack) => Ordering::Less,
+			(Nine, Nine) => Ordering::Equal,
+			(Nine, _) => Ordering::Greater,
+			(_, Nine) => Ordering::Less,
+			(s, o) => std::cmp::Ord::cmp(s, o),
+		}
+	}
 }
 
 //TODO: debug still relevant? It was used to print a vec of cards.
@@ -67,10 +81,7 @@ pub struct Card {
 
 impl Card {
 	pub fn new(value: Value, suit: Suit) -> Card {
-		Card {
-			value: value,
-			suit: suit,
-		}
+		Card { value, suit }
 	}
 }
 

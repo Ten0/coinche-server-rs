@@ -18,6 +18,13 @@ impl Trump {
 			},
 		}
 	}
+	pub fn is_trump(self, suit: Suit) -> bool {
+		match self {
+			Self::NoTrump => false,
+			Self::AllTrump => true,
+			Self::Suit(trump_suit) => trump_suit == suit,
+		}
+	}
 	pub fn as_char(self) -> char {
 		match self {
 			Self::NoTrump => 'A',

@@ -3,31 +3,14 @@ use crate::prelude::*;
 use std::sync::Arc;
 use ws::{listen, CloseCode, Handler, Message, Sender};
 
-pub struct Socket {
-	sender: Arc<Sender>,
-	player: Result<PlayerArc, GameArc>,
-}
-
-impl std::fmt::Display for Socket {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		match &self.player {
-			Ok(player) => write!(
-				f,
-				"{}",
-				&player.game.qlock().players[player.player_id].username
-			),
-			Err(_) => write!(f, "<uninitialized>"),
-		}
-	}
-}
-
 #[derive(Deserialize)]
 pub enum ClientMessage {
-	Init { username: String, team: bool },
+	Init { username: String },
 	RefreshGameState,
 	Bid(Option<Bid>),
 	Coinche,
 	SurCoinche(bool),
+	PlayCard { card_pos: usize },
 }
 
 #[derive(Serialize)]
@@ -59,19 +42,17 @@ pub enum ServerMessage<'a> {
 		card_pos: usize,
 		card: Card,
 	},
+	Trick {
+		winner_id: usize,
+	},
 }
 
 impl Socket {
 	fn handle_msg(&mut self, msg: ClientMessage) -> crate::Result<()> {
 		match &self.player {
 			Err(game_arc) => match msg {
-				ClientMessage::Init { username, team } => {
-					self.player = Ok(PlayerArc::new(
-						game_arc.clone(),
-						self.sender.clone(),
-						username,
-						team,
-					)?);
+				ClientMessage::Init { username } => {
+					self.player = Ok(PlayerArc::new(game_arc.clone(), self.sender.clone(), username)?);
 				}
 				_ => return Err(err_msg("Client not initialized")),
 			},
@@ -93,6 +74,40 @@ impl Socket {
 			},
 		}
 		Ok(())
+	}
+}
+
+pub struct Socket {
+	sender: Arc<Sender>,
+	player: Result<PlayerArc, GameArc>,
+}
+
+impl std::fmt::Display for Socket {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match &self.player {
+			Ok(player) => write!(f, "{}", &player.game.qlock().players[player.player_id].username),
+			Err(_) => write!(f, "<uninitialized>"),
+		}
+	}
+}
+
+#[derive(Clone)]
+pub struct PlayerArc {
+	pub game: GameArc,
+	pub player_id: usize,
+}
+
+impl PlayerArc {
+	pub fn new(game: GameArc, sender: Arc<Sender>, username: String) -> crate::Result<Self> {
+		let player_id = game.qlock().add_player(Player::new(sender, username))?;
+		Ok(Self { game, player_id })
+	}
+
+	pub fn qlock(&self) -> PlayerPtr<MutexGuard<'_, Game>> {
+		PlayerPtr {
+			game: self.game.qlock(),
+			player_id: self.player_id,
+		}
 	}
 }
 

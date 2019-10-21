@@ -48,36 +48,21 @@ impl Game {
 	}
 
 	pub fn player<'a>(&'a self, player_id: usize) -> PlayerPtr<&'a Game> {
-		PlayerPtr {
-			game: self,
-			player_id,
-		}
+		PlayerPtr { game: self, player_id }
 	}
 
 	pub fn player_mut<'a>(&'a mut self, player_id: usize) -> PlayerPtr<&'a mut Game> {
-		PlayerPtr {
-			game: self,
-			player_id,
-		}
+		PlayerPtr { game: self, player_id }
 	}
 
 	pub fn add_player(&mut self, player: Player) -> crate::Result<usize> {
 		// Try find user again
-		if let Some(id) = self
-			.players
-			.iter()
-			.position(|p| p.username == player.username)
-		{
+		if let Some(id) = self.players.iter().position(|p| p.username == player.username) {
 			self.players[id] = player;
 			Ok(id)
 		} else {
-			if self
-				.players
-				.iter()
-				.filter(|p| p.team == player.team)
-				.count() >= 2
-			{
-				Err(err_msg("Team is full"))
+			if self.players.len() >= 4 {
+				Err(err_msg("Game is full"))
 			} else {
 				let id = self.players.len();
 				self.players.push(player);
@@ -114,11 +99,52 @@ impl Game {
 
 	pub fn try_playing_phase(&mut self) -> bool {
 		match &self.game_state {
-			GameState::Bidding {
-				bids,
-				coinche_state,
-			} => {
-				unimplemented!();
+			GameState::Bidding { bids, coinche_state } => {
+				let player_bid: &PlayerBid = match &coinche_state {
+					BiddingCoincheState::No => {
+						if bids.len() >= 4 && bids.iter().rev().take(3).all(|b| b.bid.is_none()) {
+							&bids[bids.len() - 4]
+						} else {
+							return false;
+						}
+					}
+					BiddingCoincheState::Coinche { .. } | BiddingCoincheState::Surcoinche { .. } => match bids.last() {
+						Some(bid) => bid,
+						None => {
+							return false;
+						}
+					},
+				};
+				match player_bid.bid {
+					None => {
+						self.game_state = GameState::Lobby;
+						self.try_bidding_phase()
+					}
+					Some(bid) => {
+						self.game_state = GameState::Running(RunningGame {
+							team: Player::team(player_bid.player_id),
+							bid,
+							board: Board {
+								starting_player_id: (self.dealer_id + 1) % 4,
+								cards: Vec::new(),
+							},
+							coinche_state: match *coinche_state {
+								BiddingCoincheState::No => CoincheState::No,
+								BiddingCoincheState::Coinche { player_id, .. } => CoincheState::Coinche { player_id },
+								BiddingCoincheState::Surcoinche {
+									coincher_id,
+									surcoincher_id,
+								} => CoincheState::Surcoinche {
+									coincher_id,
+									surcoincher_id,
+								},
+							},
+							tricks: Vec::new(),
+						});
+						self.send_game_state_all();
+						true
+					}
+				}
 			}
 			_ => false,
 		}
@@ -126,22 +152,19 @@ impl Game {
 
 	pub fn try_end(&mut self) {
 		if let GameState::Running(running) = &self.game_state {
-			if running.tricks.iter().map(|v| v.len()).sum::<usize>() == (32 / 4) {
-				let team_points = |team: bool| {
-					running.tricks[team as usize]
-						.iter()
-						.flatten()
-						.map(|c| c.points(running.bid.trump))
-						.sum::<f64>()
-						.floor() as usize
-				};
-				let taking_team_points = team_points(running.team);
-				let def_team_points = team_points(!running.team);
-				let (taking_points, def_points) = running.bid.score.points(
-					taking_team_points,
-					def_team_points,
-					running.coinche_state,
-				);
+			if running.tricks.len() == (32 / 4) {
+				let mut team_points: [f64; 2] = [0., 0.];
+				for trick in running.tricks.iter() {
+					team_points[Player::team(trick.winner_id) as usize] +=
+						trick.cards.iter().map(|c| c.points(running.bid.trump)).sum::<f64>();
+				}
+				let taking_team_points = team_points[running.team as usize].floor() as usize;
+				let def_team_points = team_points[!running.team as usize].floor() as usize;
+				let (taking_points, def_points) =
+					running
+						.bid
+						.score
+						.points(taking_team_points, def_team_points, running.coinche_state);
 				self.points[running.team as usize] += taking_points;
 				self.points[!running.team as usize] += def_points;
 				self.last_round_points[running.team as usize] = taking_points;
@@ -157,6 +180,12 @@ impl Game {
 	pub fn send_refresh_all_all(&self) {
 		for player in self.players() {
 			let _ = player.send_refresh_all();
+		}
+	}
+
+	pub fn send_game_state_all(&self) {
+		for player in self.players() {
+			let _ = player.send_game_state();
 		}
 	}
 
@@ -193,27 +222,28 @@ pub struct PlayerBid {
 pub struct RunningGame {
 	pub team: bool,
 	pub bid: Bid,
-	pub tricks: [Vec<Vec<Card>>; 4],
+	pub tricks: Vec<Trick>,
 	pub coinche_state: CoincheState,
 	pub board: Board,
 }
 
 #[derive(Serialize)]
+pub struct Trick {
+	pub winner_id: usize,
+	pub cards: Vec<Card>,
+}
+
+#[derive(Serialize)]
 pub struct Board {
-	starting_player_id: usize,
-	cards: Vec<Card>,
+	pub starting_player_id: usize,
+	pub cards: Vec<Card>,
 }
 
 #[derive(Serialize, Clone, Copy)]
 pub enum CoincheState {
 	No,
-	Coinche {
-		player_id: usize,
-	},
-	Surcoinche {
-		coincher_id: usize,
-		surcoincher_id: usize,
-	},
+	Coinche { player_id: usize },
+	Surcoinche { coincher_id: usize, surcoincher_id: usize },
 }
 
 #[derive(Serialize)]
@@ -235,5 +265,36 @@ impl GameState {
 			Self::Lobby => true,
 			_ => false,
 		}
+	}
+}
+
+impl Board {
+	pub fn high_trump_value(&self, asked_suit: Suit) -> Option<Value> {
+		self.suit_values(asked_suit).max_by(Value::cmp_trump)
+	}
+
+	pub fn suit_values<'a>(&'a self, asked_suit: Suit) -> impl Iterator<Item = Value> + 'a {
+		self.cards.iter().filter(move |c| c.suit == asked_suit).map(|c| c.value)
+	}
+
+	pub fn winning_player_id(&self, trump: Trump) -> Option<usize> {
+		let asked_suit = self.cards.first()?.suit;
+		let asked_suit_cards = self.cards.iter().enumerate().filter(|(_i, c)| c.suit == asked_suit);
+		Some(
+			(match trump {
+				Trump::NoTrump => asked_suit_cards.max_by_key(|(_i, c)| c.value),
+				Trump::AllTrump => asked_suit_cards.max_by(|(_i1, c1), (_i2, c2)| c1.value.cmp_trump(&c2.value)),
+				Trump::Suit(trump_suit) => self
+					.cards
+					.iter()
+					.enumerate()
+					.filter(|(_i, c)| c.suit == trump_suit)
+					.max_by(|(_i1, c1), (_i2, c2)| c1.value.cmp_trump(&c2.value))
+					.or_else(move || asked_suit_cards.max_by(|(_i1, c1), (_i2, c2)| c1.value.cmp_trump(&c2.value))),
+			}
+			.expect("There is at least one card of the asked suit")
+			.0 + self.starting_player_id)
+				% 4,
+		)
 	}
 }

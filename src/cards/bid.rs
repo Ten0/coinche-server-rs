@@ -113,10 +113,7 @@ impl serde::Serialize for Bid {
 	where
 		S: serde::Serializer,
 	{
-		<String as serde::Serialize>::serialize(
-			&format!("{}{}", self.score.as_str(), self.trump.as_char()),
-			serializer,
-		)
+		<String as serde::Serialize>::serialize(&format!("{}{}", self.score.as_str(), self.trump.as_char()), serializer)
 	}
 }
 
@@ -137,8 +134,7 @@ impl<'de> serde::Deserialize<'de> for Bid {
 				None => return Err(D::Error::custom("Invalid bid suit value")),
 			},
 		};
-		let score =
-			BidScore::from_str(&s).ok_or_else(|| D::Error::custom("Invalid bid score value"))?;
+		let score = BidScore::from_str(&s).ok_or_else(|| D::Error::custom("Invalid bid score value"))?;
 		Ok(Bid { score, trump })
 	}
 }
