@@ -70,7 +70,9 @@ impl Socket {
 				ClientMessage::SurCoinche(do_surcoinche) => {
 					player.qlock().surcoincher(do_surcoinche)?;
 				}
-				_ => unimplemented!(),
+				ClientMessage::PlayCard { card_pos } => {
+					player.qlock().play_card(card_pos)?;
+				}
 			},
 		}
 		Ok(())
