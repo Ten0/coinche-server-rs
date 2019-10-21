@@ -45,6 +45,9 @@ pub enum ServerMessage<'a> {
 	Trick {
 		winner_id: usize,
 	},
+	Error {
+		message: &'a str,
+	},
 }
 
 impl Socket {
@@ -130,7 +133,7 @@ impl Handler for Socket {
 			Err(err) => {
 				let err_fmt = format!("{:?}", &err);
 				println!("{}", err_fmt);
-				if let Err(err_err) = self.sender.send(err_fmt.clone()) {
+				if let Err(err_err) = self.sender.send(ServerMessage::Error { message: &err_fmt }) {
 					Err(ws::Error::new(
 						ws::ErrorKind::Internal,
 						format!("{:?}\n\ncaused by:{}", err_err, err_fmt),
@@ -158,9 +161,9 @@ impl<'a> From<&ServerMessage<'a>> for Message {
 	}
 }
 
-pub fn start_server() {
+pub fn start_server() -> std::thread::JoinHandle<()> {
 	let game = GameArc::new();
-	std::thread::spawn(move || {
+	let thread = std::thread::spawn(move || {
 		listen("0.0.0.0:3000", |sender| Socket {
 			sender: Arc::new(sender),
 			player: Err(game.clone()),
@@ -169,4 +172,5 @@ pub fn start_server() {
 	});
 	// Give the server a little time to get going
 	std::thread::sleep(std::time::Duration::from_millis(10));
+	thread
 }
