@@ -2,7 +2,8 @@ use coinche::*;
 
 #[test]
 fn test_clients() {
-	websocket::start_server(false);
+	logging::init_logger().unwrap();
+	server::start(3000);
 	let _ = client("c1");
 }
 

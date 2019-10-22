@@ -4,7 +4,7 @@ pub mod points;
 
 use crate::prelude::*;
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Game {
 	pub players: Vec<Player>,
 	pub points: [usize; 2],
@@ -13,7 +13,7 @@ pub struct Game {
 	pub game_state: GameState,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub enum GameState {
 	Lobby,
 	Bidding {
@@ -23,7 +23,7 @@ pub enum GameState {
 	Running(RunningGame),
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct RunningGame {
 	pub team: bool,
 	pub bid: Bid,
@@ -32,26 +32,26 @@ pub struct RunningGame {
 	pub board: Board,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Board {
 	pub starting_player_id: usize,
 	pub cards: Vec<Card>,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Trick {
 	pub winner_id: usize,
 	pub cards: Vec<Card>,
 }
 
-#[derive(Serialize, Clone, Copy)]
+#[derive(Debug, Serialize, Clone, Copy)]
 pub enum CoincheState {
 	No,
 	Coinche { player_id: usize },
 	Surcoinche { coincher_id: usize, surcoincher_id: usize },
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub enum BiddingCoincheState {
 	No,
 	Coinche {
@@ -231,9 +231,9 @@ impl Game {
 		}
 	}
 
-	pub fn send_all<M: Into<ws::Message> + Copy>(&self, msg: M) {
+	pub fn send_all<'a>(&self, msg: impl Borrow<ServerMessage<'a>>) {
 		for player in self.players() {
-			let _ = player.send(msg);
+			let _ = player.send(msg.borrow());
 		}
 	}
 }

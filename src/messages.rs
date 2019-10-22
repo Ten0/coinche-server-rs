@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub enum ClientMessage {
 	Init { username: String },
 	RefreshGameState,
@@ -10,7 +10,7 @@ pub enum ClientMessage {
 	PlayCard(PlayerCardIdentifier),
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub enum ServerMessage<'a> {
 	/// Player list, ids and points
 	Game {
@@ -49,7 +49,8 @@ pub enum ServerMessage<'a> {
 
 impl Socket {
 	pub fn handle_msg(&mut self, msg: ClientMessage) -> crate::Result<()> {
-		match &self.player {
+		println!("Got message from {:?}: {:?}", self, &msg);
+		/*match &self.player {
 			Err(game_arc) => match msg {
 				ClientMessage::Init { username } => {
 					self.player = Ok(PlayerArc::new(game_arc.clone(), self.sender.clone(), username)?);
@@ -74,7 +75,7 @@ impl Socket {
 					player.qlock().play_card(card_identifier)?;
 				}
 			},
-		}
+		}*/
 		Ok(())
 	}
 }

@@ -26,8 +26,8 @@ pub struct PlayerArc {
 }
 
 impl PlayerArc {
-	pub fn new(game: GameArc, sender: Arc<Sender>, username: String) -> crate::Result<Self> {
-		let player_id = game.qlock().add_player(Player::new(sender, username))?;
+	pub fn new(game: GameArc, username: String) -> crate::Result<Self> {
+		let player_id = game.qlock().add_player(Player::new(username))?;
 		Ok(Self { game, player_id })
 	}
 
