@@ -20,10 +20,10 @@ mod test {
 		use ws::connect;
 		if let Err(error) = connect("ws://127.0.0.1:3000", |out| {
 			// Queue a message to be sent when the WebSocket is open
-			if let Err(_) = out.send(username) {
+			if let Err(_) = out.send(format!(r#"{{"Init": {{"username": "{}"}}}}"#, username)) {
 				panic!("Websocket couldn't queue an initial message.")
 			} else {
-				println!("Client sent message 'Hello WebSocket'. ")
+				println!("Client sent message.")
 			}
 
 			// The handler needs to take ownership of out, so we use move
@@ -32,7 +32,7 @@ mod test {
 				println!("Client got message '{}'. ", msg);
 
 				// Close the connection
-				//out.close(CloseCode::Normal)
+				out.close(ws::CloseCode::Normal)?;
 				Ok(())
 			}
 		}) {
