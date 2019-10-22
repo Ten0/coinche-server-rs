@@ -1,15 +1,17 @@
 use coinche::*;
 
+use futures::Future;
+
 #[test]
 fn test_clients() {
 	logging::init_logger().unwrap();
-	server::start(3000);
+	let server = server::start(3000);
 	let _ = client("c1");
 }
 
 fn client(username: &str) {
 	use ws::connect;
-	if let Err(error) = connect("ws://127.0.0.1:3000", |out| {
+	if let Err(error) = connect("ws://127.0.0.1:3000/ws/", |out| {
 		// Queue a message to be sent when the WebSocket is open
 		if let Err(_) = out.send(format!(r#"{{"Init": {{"username": "{}"}}}}"#, username)) {
 			panic!("Websocket couldn't queue an initial message.")

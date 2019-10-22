@@ -27,13 +27,11 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for Socket {
 }
 
 pub fn index(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, Error> {
-	let resp = ws::start(
+	ws::start(
 		Socket {
 			state: "initial state".to_owned(),
 		},
 		&req,
 		stream,
-	);
-	println!("{:?}", resp);
-	resp
+	)
 }
