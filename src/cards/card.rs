@@ -73,7 +73,7 @@ impl Value {
 
 //TODO: debug still relevant? It was used to print a vec of cards.
 /// An unnamed tuple with Value and Suit.
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Ord, PartialOrd, Hash, Serialize)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub struct Card {
 	pub value: Value,
 	pub suit: Suit,

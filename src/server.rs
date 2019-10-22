@@ -10,7 +10,7 @@ pub enum ClientMessage {
 	Bid(Option<Bid>),
 	Coinche,
 	SurCoinche(bool),
-	PlayCard { card_pos: usize },
+	PlayCard(PlayerCardIdentifier),
 }
 
 #[derive(Serialize)]
@@ -73,8 +73,8 @@ impl Socket {
 				ClientMessage::SurCoinche(do_surcoinche) => {
 					player.qlock().surcoincher(do_surcoinche)?;
 				}
-				ClientMessage::PlayCard { card_pos } => {
-					player.qlock().play_card(card_pos)?;
+				ClientMessage::PlayCard(card_identifier) => {
+					player.qlock().play_card(card_identifier)?;
 				}
 			},
 		}

@@ -168,11 +168,12 @@ impl<G: DerefMut<Target = Game>> PlayerPtr<G> {
 		}
 	}
 
-	pub fn play_card(&mut self, card_pos: usize) -> crate::Result<bool> {
+	pub fn play_card(&mut self, card_identifier: PlayerCardIdentifier) -> crate::Result<bool> {
 		let team = self.team();
 		let game = self.game.deref_mut();
 		let players = &mut game.players;
-		let cards = &players[self.player_id].cards;
+		let player = &players[self.player_id];
+		let cards = &player.cards;
 		match game.game_state {
 			GameState::Running(RunningGame {
 				ref mut board,
@@ -181,7 +182,7 @@ impl<G: DerefMut<Target = Game>> PlayerPtr<G> {
 				..
 			}) => {
 				if ((board.starting_player_id + board.cards.len()) % 4) == self.player_id {
-					if let Some(try_play_card) = cards.get(card_pos).copied() {
+					if let Some((card_pos, try_play_card)) = player.find_card(card_identifier) {
 						// There's a chance we can play: it's our turn in the proper state.
 						// Let's now check if the play is valid
 						let can_play = if let Some(asked_suit) = board.cards.first().map(|c| c.suit) {
@@ -291,6 +292,13 @@ impl Player {
 	pub fn team(player_id: usize) -> bool {
 		player_id % 2 != 0
 	}
+
+	pub fn find_card(&self, card_identifier: PlayerCardIdentifier) -> Option<(usize, Card)> {
+		match card_identifier {
+			PlayerCardIdentifier::CardPos(pos) => self.cards.get(pos).map(|c| (pos, *c)),
+			PlayerCardIdentifier::Card(card) => self.cards.iter().position(|&c| c == card).map(|pos| (pos, card)),
+		}
+	}
 }
 
 impl<G: Deref<Target = Game>> Deref for PlayerPtr<G> {
@@ -303,4 +311,10 @@ impl<G: Deref<Target = Game> + DerefMut<Target = Game>> DerefMut for PlayerPtr<G
 	fn deref_mut(&mut self) -> &mut Self::Target {
 		&mut self.game.players[self.player_id]
 	}
+}
+
+#[derive(Clone, Copy, Deserialize)]
+pub enum PlayerCardIdentifier {
+	CardPos(usize),
+	Card(Card),
 }
