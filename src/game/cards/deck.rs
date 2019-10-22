@@ -42,8 +42,6 @@ fn create_card_for_value(value: u8) -> Card {
 
 /// A deck can be dealt from and shuffled.
 impl Deck {
-	//TODO: a deck containing multiple sets of cards? When 32*3 is needed.
-
 	/// Returns a deck where all cards are sorted by Suit, then by Value.
 	pub fn new_unshuffled() -> Deck {
 		let mut d = Deck {

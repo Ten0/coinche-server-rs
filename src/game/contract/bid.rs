@@ -1,5 +1,17 @@
 use crate::prelude::*;
 
+#[derive(Serialize, Clone, Copy)]
+pub struct PlayerBid {
+	pub player_id: usize,
+	pub bid: Option<Bid>,
+}
+
+#[derive(Clone, Copy, Serialize, Deserialize)]
+pub struct Bid {
+	pub trump: Trump,
+	pub score: BidScore,
+}
+
 #[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum BidScore {
 	#[serde(rename = "80")]
@@ -24,7 +36,7 @@ pub enum BidScore {
 	_170,
 	#[serde(rename = "180")]
 	_180,
-	#[serde(rename = "C")]
+	#[serde(rename = "Capot")]
 	Capot,
 }
 
@@ -67,10 +79,4 @@ impl BidScore {
 			(false, CoincheState::Surcoinche { .. }) => (0, 160 + points_base * 4),
 		}
 	}
-}
-
-#[derive(Clone, Copy, Serialize, Deserialize)]
-pub struct Bid {
-	pub trump: Trump,
-	pub score: BidScore,
 }

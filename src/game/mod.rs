@@ -1,23 +1,8 @@
+pub mod cards;
+pub mod contract;
+pub mod points;
+
 use crate::prelude::*;
-
-use std::sync::{Arc, Mutex, MutexGuard};
-
-#[derive(Deref, Clone)]
-pub struct GameArc {
-	ptr: Arc<Mutex<Game>>,
-}
-
-impl GameArc {
-	pub fn new() -> Self {
-		Self {
-			ptr: Arc::new(Mutex::new(Game::new())),
-		}
-	}
-
-	pub fn qlock(&self) -> MutexGuard<Game> {
-		self.ptr.lock().unwrap()
-	}
-}
 
 #[derive(Serialize)]
 pub struct Game {
@@ -28,8 +13,59 @@ pub struct Game {
 	pub game_state: GameState,
 }
 
+#[derive(Serialize)]
+pub enum GameState {
+	Lobby,
+	Bidding {
+		bids: Vec<PlayerBid>,
+		coinche_state: BiddingCoincheState,
+	},
+	Running(RunningGame),
+}
+
+#[derive(Serialize)]
+pub struct RunningGame {
+	pub team: bool,
+	pub bid: Bid,
+	pub tricks: Vec<Trick>,
+	pub coinche_state: CoincheState,
+	pub board: Board,
+}
+
+#[derive(Serialize)]
+pub struct Board {
+	pub starting_player_id: usize,
+	pub cards: Vec<Card>,
+}
+
+#[derive(Serialize)]
+pub struct Trick {
+	pub winner_id: usize,
+	pub cards: Vec<Card>,
+}
+
+#[derive(Serialize, Clone, Copy)]
+pub enum CoincheState {
+	No,
+	Coinche { player_id: usize },
+	Surcoinche { coincher_id: usize, surcoincher_id: usize },
+}
+
+#[derive(Serialize)]
+pub enum BiddingCoincheState {
+	No,
+	Coinche {
+		player_id: usize,
+		player_skipped: Option<usize>,
+	},
+	Surcoinche {
+		coincher_id: usize,
+		surcoincher_id: usize,
+	},
+}
+
 impl Game {
-	fn new() -> Self {
+	pub fn new() -> Self {
 		Self {
 			players: Vec::new(),
 			points: [0, 0],
@@ -199,69 +235,6 @@ impl Game {
 			let _ = player.send(msg);
 		}
 	}
-}
-
-#[derive(Serialize)]
-pub struct Contract {
-	pub points: usize,
-	pub trump: Trump,
-}
-
-#[derive(Serialize)]
-pub enum GameState {
-	Lobby,
-	Bidding {
-		bids: Vec<PlayerBid>,
-		coinche_state: BiddingCoincheState,
-	},
-	Running(RunningGame),
-}
-
-#[derive(Serialize, Clone, Copy)]
-pub struct PlayerBid {
-	pub player_id: usize,
-	pub bid: Option<Bid>,
-}
-
-#[derive(Serialize)]
-pub struct RunningGame {
-	pub team: bool,
-	pub bid: Bid,
-	pub tricks: Vec<Trick>,
-	pub coinche_state: CoincheState,
-	pub board: Board,
-}
-
-#[derive(Serialize)]
-pub struct Trick {
-	pub winner_id: usize,
-	pub cards: Vec<Card>,
-}
-
-#[derive(Serialize)]
-pub struct Board {
-	pub starting_player_id: usize,
-	pub cards: Vec<Card>,
-}
-
-#[derive(Serialize, Clone, Copy)]
-pub enum CoincheState {
-	No,
-	Coinche { player_id: usize },
-	Surcoinche { coincher_id: usize, surcoincher_id: usize },
-}
-
-#[derive(Serialize)]
-pub enum BiddingCoincheState {
-	No,
-	Coinche {
-		player_id: usize,
-		player_skipped: Option<usize>,
-	},
-	Surcoinche {
-		coincher_id: usize,
-		surcoincher_id: usize,
-	},
 }
 
 impl GameState {

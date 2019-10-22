@@ -1,4 +1,3 @@
-use super::trump::TrumpMatch;
 use crate::prelude::*;
 
 impl Card {

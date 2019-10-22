@@ -1,6 +1,6 @@
-pub mod cards;
 pub mod game;
 pub mod player;
+pub mod rcs;
 pub mod server;
 pub mod static_files;
 pub mod websocket;
@@ -14,9 +14,11 @@ pub type Result<T> = std::result::Result<T, failure::Error>;
 
 mod prelude {
 	use super::*;
-	pub use cards::{Bid, BidScore, Card, Deck, Suit, Trump, Value};
+	pub use cards::*;
+	pub use contract::*;
 	pub use game::*;
 	pub use player::*;
+	pub use rcs::{GameArc, PlayerArc};
 	pub use server::{ClientMessage, ServerMessage};
 	pub use websocket::Socket;
 

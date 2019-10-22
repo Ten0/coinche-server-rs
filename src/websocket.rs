@@ -18,26 +18,6 @@ impl std::fmt::Display for Socket {
 	}
 }
 
-#[derive(Clone)]
-pub struct PlayerArc {
-	pub game: GameArc,
-	pub player_id: usize,
-}
-
-impl PlayerArc {
-	pub fn new(game: GameArc, sender: Arc<Sender>, username: String) -> crate::Result<Self> {
-		let player_id = game.qlock().add_player(Player::new(sender, username))?;
-		Ok(Self { game, player_id })
-	}
-
-	pub fn qlock(&self) -> PlayerPtr<MutexGuard<'_, Game>> {
-		PlayerPtr {
-			game: self.game.qlock(),
-			player_id: self.player_id,
-		}
-	}
-}
-
 impl Handler for Socket {
 	fn on_message(&mut self, msg: Message) -> ws::Result<()> {
 		let res: crate::Result<()> = match msg.as_text() {
