@@ -17,7 +17,7 @@ pub enum DeckError {
 
 /// translates a value between 0 and 51 to a Card. Used internally.
 fn create_card_for_value(value: u8) -> Card {
-	let suit = match value / 13 {
+	let suit = match value / 8 {
 		0 => Suit::Spades,
 		1 => Suit::Hearts,
 		2 => Suit::Diamonds,
