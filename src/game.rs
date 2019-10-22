@@ -71,7 +71,7 @@ impl Game {
 					player.send_refresh_all()?;
 					for other_player in self.players() {
 						if other_player.player_id != player.player_id {
-							let _ = player.send_game_state();
+							let _ = other_player.send_game_state();
 						}
 					}
 				}
