@@ -193,7 +193,7 @@ class Vue{
 		else $("#bid-double").hide();
 		$("#bid-pass").removeClass("disabled");
 		$("#bid-picker label").removeClass("disabled");
-		$("#bid-picker label").removeAttr("disabled");
+		$("#bid-picker input").removeAttr("disabled");
 		
 		for(var elt of $("#bid-value-picker label")){
 			elt = $(elt)
@@ -264,8 +264,8 @@ class Vue{
 	updateScores(our_score, their_score){
 		if(this.freezed) return this.push("updateScores", our_score, their_score);
 		$("#last-trick").empty();
-		$("us").html(our_score);
-		$("them").html(their_score);
+		$("#us").html(our_score);
+		$("#them").html(their_score);
 	}
 	
 	message(msg, ms){

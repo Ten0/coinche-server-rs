@@ -139,7 +139,13 @@ class Game{
 	
 	cardTurn(){
 		vue.showTurn(this.turn, 2);
-		if(this.turn == 0) vue.makeCardsPlayable(this.cards);
+		if(this.turn == 0){
+			if(this.cards.length == 1){
+				attemptPlay(this.cards[0]);
+				this.cards = [];
+			}
+			else vue.makeCardsPlayable(this.cards);
+		}
 		else vue.makeCardsUnplayable();
 	}
 	
