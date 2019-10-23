@@ -81,28 +81,28 @@ impl<G: DerefMut<Target = Game>> PlayerPtr<G> {
 							player_id,
 							ref mut player_skipped,
 						} => {
-							if do_surcoinche {
+							let start_game = if do_surcoinche {
 								*coinche_state = BiddingCoincheState::Surcoinche {
 									coincher_id: *player_id,
 									surcoincher_id: self.player_id,
 								};
+								game.send_all(&ServerMessage::SurCoinche {
+									player_id: self.player_id,
+								});
+								true
 							} else {
 								if player_skipped.is_some() && *player_skipped != Some(self.player_id) {
-									return {
-										if !self.game.try_playing_phase() {
-											Err(err_msg("Could not start game"))
-										} else {
-											Ok(())
-										}
-									};
+									true
 								} else {
 									*player_skipped = Some(self.player_id);
+									false
 								}
+							};
+							if start_game && !self.game.try_playing_phase() {
+								Err(err_msg("Could not start game"))
+							} else {
+								Ok(())
 							}
-							game.send_all(&ServerMessage::Coinche {
-								player_id: self.player_id,
-							});
-							Ok(())
 						}
 						_ => Err(err_msg("Game is in non-sur-coinchable state")),
 					}
