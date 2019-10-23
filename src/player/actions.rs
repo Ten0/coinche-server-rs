@@ -48,7 +48,7 @@ impl<G: DerefMut<Target = Game>> PlayerPtr<G> {
 				ref mut coinche_state,
 			} => match coinche_state {
 				BiddingCoincheState::No => {
-					if Some(team) == bids.last().map(|last_bid| Player::team(last_bid.player_id)) {
+					if Some(team) == bids.last().map(|last_bid| !Player::team(last_bid.player_id)) {
 						*coinche_state = BiddingCoincheState::Coinche {
 							player_id: self.player_id,
 							player_skipped: None,
@@ -58,7 +58,7 @@ impl<G: DerefMut<Target = Game>> PlayerPtr<G> {
 						});
 						Ok(())
 					} else {
-						Err(err_msg("Nothing to 'coincher'"))
+						Err(err_msg("No opponent's bid to 'coincher'"))
 					}
 				}
 				_ => Err(err_msg("Game is in non-coinchable state")),
