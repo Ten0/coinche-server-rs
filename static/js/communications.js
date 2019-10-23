@@ -24,6 +24,7 @@ function attemptBid(bid){
 			"trump": {"Suit": bid.color},
 			"score": score
 		}
+		if(bid.color == "NoTrump" || bid.color == "AllTrump") bid_obj["trump"] = bid.color;
 		send("Bid", bid_obj);
 	}
 }
@@ -50,7 +51,7 @@ function onmessage(event){
 		}
 	}
 	catch(error){
-		console.error("Unparsable data:", event.data);
+		console.error("This message raised an error:", event.data);
 		console.error(error);
 	}
 

@@ -117,17 +117,24 @@ class Game{
 	}
 	
 	bidTurn(){
-		vue.showTurn(this.turn);
-		var doubleAvail = this.highestBid && !this.isPlayerInMyTeam(this.highestBidPlayer)		
-		if(this.turn == 0){
-			var val = this.highestBid ? this.highestBid.value : 0;
-			vue.showBidPicker(val, doubleAvail);
+		if(this.highestBid && this.highestBid.isDoubled){
+			vue.showTurn([this.turn, (this.turn + 2)%4], 1);
+			if(this.turn == 0 || this.turn == 2) vue.showDoubledDoubleOption();
 		}
-		if(this.turn == 2 && doubleAvail) vue.showDoubleOption();
+		else{
+			vue.showTurn(this.turn, 1);
+			var doubleAvail = this.highestBid && !this.isPlayerInMyTeam(this.highestBidPlayer)		
+			if(this.turn == 0){
+				var val = this.highestBid ? this.highestBid.value : 0;
+				vue.showBidPicker(val, doubleAvail);
+			}
+			if(this.turn == 2 && doubleAvail) vue.showDoubleOption();
+		}
+
 	}
 	
 	cardTurn(){
-		vue.showTurn(this.turn);
+		vue.showTurn(this.turn, 2);
 		if(this.turn == 0) vue.makeCardsPlayable(this.cards);
 		else vue.makeCardsUnplayable();
 	}
@@ -136,7 +143,6 @@ class Game{
 		this.turn = (this.turn + 1) % 4;
 		this.current_trick.push(card);
 		if(player == 0) this.removeCard(card);
-		vue.showTurn(this.turn);
 		vue.playCard(player, card);
 		this.cardTurn();
 	}

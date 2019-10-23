@@ -211,9 +211,17 @@ class HtmlGenerator{
 		$("#current-trick").children().appendTo("#last-trick");
 	}
 	
-	showTurn(turn){
+	showTurn(turn, phase){
+		$(".name").removeClass("turn");
 		$(".hand").removeClass("turn");
-		this.handOfPlayer(turn).addClass("turn");
+		if(phase == 1){
+			if(typeof(turn) == "number") this.nameEltOfPlayer(turn).addClass("turn");
+			else{
+				this.nameEltOfPlayer(turn[0]).addClass("turn");
+				this.nameEltOfPlayer(turn[1]).addClass("turn");
+			}
+		}
+		if(phase == 2) this.handOfPlayer(turn).addClass("turn");
 	}
 	
 	message(msg, ms){
