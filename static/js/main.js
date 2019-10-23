@@ -4,7 +4,7 @@ var vue;
 
 window.addEventListener("load", function(){ 
 	
-	vue = new HtmlGenerator();
+	vue = new Vue();
 	
 	var url = new URL(location); 
 	var user = url.searchParams.get("user");
