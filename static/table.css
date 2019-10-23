@@ -1,0 +1,229 @@
+#table{
+	border: solid 1px black; width: 1000px; height: 550px; overflow: hidden;
+	margin-left: auto;
+	margin-right: auto;
+	background-color: #2b7312;
+	position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+}
+
+#table-container{
+	position: relative;
+	width: 80%;
+	height: 98%;
+	display: inline-block;
+}
+
+#aside{
+	display: inline-block;
+	position: relative;
+	width: 19%;
+	height: 98%;
+	border-left: solid 1px black;
+}
+
+/* hands */
+.hand{
+	position: absolute;
+	border-radius: 5px;
+}
+
+.turn{
+	box-shadow: 0 0 20px yellow;
+	background-color: rgba(255,255,0,0.5);
+}
+
+#bottom-hand, #top-hand{ left: 50%; transform: translate(-50%, 0); }
+#left-hand, #right-hand{ top: 50%; transform: translate(0, -50%); width: 76px; }
+#bottom-hand{ bottom: -6px}
+#top-hand{ top: -6px}
+#right-hand{right: -6px}
+#left-hand{left: -6px}
+
+/* card exterior */
+.card{
+	border: 1px solid black;
+	border-radius: 5px; 
+	display: inline-block; 
+	position: relative; 
+	text-align: center;
+	margin : 1px;
+}
+
+.card.left, .card.right{ height: 38px; width: 75px; }
+.card.top, .card.bottom{ width: 38px; height: 75px; }
+
+.hidden{ background-color: rgb(187, 187, 187); }
+.trump{ border: solid 1px orange; }
+.visible{ background-color: #F3F3F3; }
+.card.playable{background-color: white; cursor: pointer;}
+.card.playable:hover{box-shadow: 0 0 10px white;}
+
+/* card interior */
+.card div{
+	font-size: 30px; 
+	text-align: center; 
+	width: 35px; 
+	user-select: none;
+}
+.card.left div{ transform: rotate(90deg);  position: absolute; top: -14px; right: 20px;}
+.card.top div{ transform: rotate(180deg); position: absolute; bottom: 3px; }
+.card.right div{  transform: rotate(270deg); position: absolute; top: -16px; left: 20px; } 
+
+/* played card */
+
+#current-trick, #last-trick{
+	width: 170px;
+	height: 170px;
+	position: absolute;
+}
+
+#current-trick{ left: 50%; top: 50%; transform: translate(-50%, -50%);	}
+#last-trick{ left: 50%; top: 30px; transform: translate(-50%, 0); }
+
+.card.played{ position: absolute; }
+.played.bottom{ bottom: 0px; left: 50%; transform: translate(-50%, 0); }
+.played.top{ top: 0px; left: 50%; transform: translate(-50%, 0); }
+.played.right{ right: 0px; top: 50%; transform: translate(0, -50%); }
+.played.left{ left: 0px; top: 50%; transform: translate(0, -50%); }
+.played.winner{ box-shadow: 0 0 15px yellow; }
+
+/* Bid-Picker : */
+
+#bid-picker{
+	position: absolute;
+	top : 125px;
+	left: 150px;
+	border: solid 1px black;
+	border-radius: 10px;
+	background-color: white;
+	width: 700px;
+	height: 300px;
+}
+
+#bid-picker form{
+	padding: 18px;
+}
+
+#bid-picker label{
+	display: inline-block;
+	position: relative;
+	border: solid 1px black;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 30px;
+	padding: 9px;
+	margin: 0 4px 0 4px;
+	user-select: none; 
+}
+
+#bid-picker .disabled{
+	background-color: #4444;
+	opacity: 0.5;
+	cursor: auto;
+}
+
+#bid-color-picker label{
+	min-width: 30px;
+	text-align: center;
+}
+
+#bid-picker input[type="radio"]{
+	display: none;
+}
+
+#bid-picker input[type="radio"]:checked+label{ 
+	background-color: #BBBBBB;
+	text-shadow: 0 0 5px white;
+} 
+
+#bid-picker span{
+	display: block;
+	margin: auto;
+	width: 350px;
+}
+
+#bid-picker button{
+	color: white;
+	font-size: 30px;
+	border: solid 2px black;
+	padding: 12px;
+	border-radius: 10px;
+	cursor: pointer;
+}
+
+#bid-double, #bid-doubled-double{
+	background-color: red;
+}
+
+#bid-pass{
+	background-color: darkblue;
+}
+
+/* Bid */
+
+.bid{
+	position: absolute;
+	border: solid 1px #666666;
+	background-color: white;
+	box-shadow: 0 0 5px white;
+	width: 70px;
+	height: 25px;
+	border-radius : 100px / 55px;
+	padding: 15px;
+	font-size: 26px;
+	text-align: center;
+}
+
+#bottom-bid{
+	bottom: 20px;
+	right: 200px;
+}
+
+#top-bid{
+	top: 20px;
+	left: 220px;
+}
+
+#right-bid{
+	top: 40px;
+	right: 10px;
+}
+
+#left-bid{
+	bottom : 40px;
+	left : 10px;
+}
+
+/* Player names */
+
+
+.name{
+	position: absolute;
+	border: solid 1px #666666;
+	background-color: white;
+	width: 94px;
+	height: 20px;
+	padding: 3px;
+	font-size: 20px;
+	text-align: center;
+}
+
+#bottom-name{
+	bottom: 73px;
+	right: 200px;
+}
+
+#top-name{
+	top: 73px;
+	left: 220px;
+}
+
+#right-name{
+	top: 17px;
+	right: 10px;
+}
+
+#left-name{
+	bottom : 17px;
+	left : 10px;
+}
