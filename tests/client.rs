@@ -7,6 +7,7 @@ fn test_clients() {
 	logging::init_logger().unwrap();
 	let server = server::start(3000);
 	let _ = client("c1");
+	server.stop(true).wait().unwrap();
 }
 
 fn client(username: &str) {
