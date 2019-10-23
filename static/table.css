@@ -240,3 +240,26 @@
 	bottom : 17px;
 	left : 10px;
 }
+
+/* Scores */
+#score{
+	border-collapse: collapse;
+}
+
+table#score, #score tr, #score td{
+	border: solid 1px black;
+	text-align: center;
+}
+
+table#score{
+	margin-top: 300px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#score td{
+	
+	font-size: 26px;
+	padding: 5px;
+	width: 80px;
+}

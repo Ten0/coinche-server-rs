@@ -261,6 +261,13 @@ class Vue{
 		if(phase == 2) this.handOfPlayer(turn).addClass("turn");
 	}
 	
+	updateScores(our_score, their_score){
+		if(this.freezed) return this.push("updateScores", our_score, their_score);
+		$("#last-trick").empty();
+		$("us").html(our_score);
+		$("them").html(their_score);
+	}
+	
 	message(msg, ms){
 		console.log("message de la vue :", msg);
 	}

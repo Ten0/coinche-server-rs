@@ -67,6 +67,11 @@ class Game{
 		this.first_player = this.localPlayerId(data.dealer_id + 1);
 		this.players = data.players;
 		vue.showNames(this.players);
+		
+		// update scores
+		if(this.player_id % 2 == 0) vue.updateScores(...data.points)
+		else vue.updateScores(data.points[1], data.points[0]);
+		
 		var state = data.game_state;
 		var type = serde.datatype(state);
 		if(type == "Lobby"){
