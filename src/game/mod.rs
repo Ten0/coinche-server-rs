@@ -268,7 +268,7 @@ impl Board {
 					.enumerate()
 					.filter(|(_i, c)| c.suit == trump_suit)
 					.max_by(|(_i1, c1), (_i2, c2)| c1.value.cmp_trump(&c2.value))
-					.or_else(move || asked_suit_cards.max_by(|(_i1, c1), (_i2, c2)| c1.value.cmp_trump(&c2.value))),
+					.or_else(move || asked_suit_cards.max_by_key(|(_i, c)| c.value)),
 			}
 			.expect("There is at least one card of the asked suit")
 			.0 + self.starting_player_id)

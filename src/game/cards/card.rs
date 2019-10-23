@@ -36,10 +36,10 @@ pub enum Value {
 	Seven,
 	Eight,
 	Nine,
-	Ten,
 	Jack,
 	Queen,
 	King,
+	Ten,
 	Ace,
 }
 
@@ -49,10 +49,10 @@ impl Value {
 			Value::Seven => '7',
 			Value::Eight => '8',
 			Value::Nine => '9',
-			Value::Ten => 'T',
 			Value::Jack => 'J',
 			Value::Queen => 'Q',
 			Value::King => 'K',
+			Value::Ten => 'T',
 			Value::Ace => 'A',
 		}
 	}
