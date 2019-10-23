@@ -107,7 +107,7 @@ impl<G: DerefMut<Target = Game>> PlayerPtr<G> {
 						_ => Err(err_msg("Game is in non-sur-coinchable state")),
 					}
 				} else {
-					Err(err_msg("Nothing to 'coincher'"))
+					Err(err_msg("Nothing to 'surcoincher'"))
 				}
 			}
 			_ => Err(err_msg("Not in bidding phase")),
