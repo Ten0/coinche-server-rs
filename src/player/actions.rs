@@ -12,7 +12,7 @@ impl<G: DerefMut<Target = Game>> PlayerPtr<G> {
 				ref coinche_state,
 			} => match coinche_state {
 				BiddingCoincheState::No => {
-					let curr_player = bids.last().map_or(dealer_id, |b| (b.player_id + 1) % 4);
+					let curr_player = (bids.last().map_or(dealer_id, |b| b.player_id) + 1) % 4;
 					if self.player_id == curr_player {
 						let player_bid = PlayerBid {
 							player_id: self.player_id,
