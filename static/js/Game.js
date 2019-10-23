@@ -75,6 +75,7 @@ class Game{
 		if(type == "Bidding"){
 			this.bids = {}
 			this.phase = 1;
+			this.trumpColor = undefined;
 			for(var pbid of state.Bidding.bids){
 				var player = this.localPlayerId(pbid.player_id);
 				this.bids[player] = serde.playerBid(pbid, state.Bidding.coinche_state);
@@ -86,14 +87,12 @@ class Game{
 		}
 		if(type == "Running"){
 			this.phase = 2;
-			if(!this.trumpColor){
-				this.bids = {}
-				var bid = serde.bid(state.Running.bid, state.Running.coinche_state);
-				// NOT GOOD : 
-				this.bids[state.Running.team ? 0 : 1] = bid
-				this.bids[state.Running.team ? 2 : 3] = bid
-				this.trumpColor = bid.color;
-			}
+			vue.hideBidPicker();
+			this.bids = {}
+			var bid = serde.bid(state.Running.bid, state.Running.coinche_state);
+			this.bids[this.localPlayerId(state.Running.team ? 1 : 0)] = bid;
+			this.bids[this.localPlayerId(state.Running.team ? 3 : 2)] = bid;
+			this.trumpColor = bid.color;
 			var board = state.Running.board;
 			this.current_trick = board.cards.map(serde.card);
 			this.starting_player = this.localPlayerId(board.starting_player_id);
@@ -154,7 +153,7 @@ class Game{
 	}
 	
 	doBid(player, bid){
-		this.bids[player] = bid;
+		if(!bid.isDoubledDouble) this.bids[player] = bid;
 		vue.displayBid(player, bid);
 		if(bid.isDouble || bid.isDoubledDouble){
 			this.highestBid.doubleIt();

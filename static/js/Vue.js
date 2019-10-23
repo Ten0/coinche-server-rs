@@ -138,6 +138,7 @@ class HtmlGenerator{
 	}
 	
 	displayAllBids(bids){
+		$(".bid").html("");
 		for(var player in bids){
 			this.displayBid(player, bids[player]);
 		}
@@ -146,7 +147,7 @@ class HtmlGenerator{
 	displayBid(player, bid){
 		var elt = this.bidOfPlayer(player);
 		elt.css("color", "black");
-		if(bid.isPass || bid.isDouble || bid.isDoubleDoubled){
+		if(bid.isPass || bid.isDouble || bid.isDoubledDouble){
 			if(bid.isPass) elt.html("-");
 			if(bid.isDouble) elt.html("C");
 			if(bid.isDoubleDoubled) elt.html("CC");
@@ -178,6 +179,10 @@ class HtmlGenerator{
 				elt.addClass("disabled");
 			}
 		}
+	}
+	
+	hideBidPicker(){
+		$("#bid-picker").hide();
 	}
 	
 	disableAllBids(){

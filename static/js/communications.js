@@ -8,7 +8,10 @@ function send(type, data){
 
 function attemptBid(bid){
 	if(bid.isPass){
-		if(game.highestBid && game.highestBid.isDoubled) send("SurCoinche", false);
+		if(game.highestBid && game.highestBid.isDoubled){
+			send("SurCoinche", false);
+			vue.hideBidPicker();
+		}
 		else send("Bid", null);
 	}
 	else if(bid.isDouble){
