@@ -39,7 +39,7 @@ class Card{
 	}
 	
 	get trump(){
-		return (game.trumpColor !== undefined && game.trumpColor == this.color);
+		return (game.trumpColor && game.trumpColor == this.color);
 	}
 	
 	valueOf(){
@@ -140,11 +140,13 @@ class Game{
 	cardTurn(){
 		vue.showTurn(this.turn, 2);
 		if(this.turn == 0){
+			/*
 			if(this.cards.length == 1){
 				attemptPlay(this.cards[0]);
 				this.cards = [];
 			}
-			else vue.makeCardsPlayable(this.cards);
+			else vue.makeCardsPlayable(this.getPlayableCards()); */
+			vue.makeCardsPlayable(this.getPlayableCards()); 
 		}
 		else vue.makeCardsUnplayable();
 	}
@@ -186,7 +188,8 @@ class Game{
 	
 	trickWon(winner){
 		this.current_trick = [];
-		this.turn = winner
+		this.turn = winner;
+		this.starting_player = winner;
 		vue.showTrickWinner(winner);
 		this.cardTurn();
 	}
@@ -228,6 +231,59 @@ class Game{
 			if(nbPass == 4) return true;
 			if(this.highestBid && nbPass == 3 && ((this.turn + 1) % 4 == this.highestBidPlayer)) return true;
 			return false;
+		}
+	}
+	
+	getPlayableCards(){
+		if(this.current_trick.length == 0) return this.cards;
+		var firstColor = this.current_trick[0].color;
+		var sameColorCards = this.cards.filter(c => c.color == firstColor);
+		var maxCardFn = (a, b) => Math.max(a, b) == a ? a : b;
+		
+		var winningCard;
+		if(this.trumpColor == "AllTrump" || this.trumpColor == "NoTrump" || this.trumpColor == firstColor){
+			winningCard = this.current_trick.filter(c => c.color == firstColor).reduce(maxCardFn);
+		}
+		else{
+			var trumpCards = this.current_trick.filter(c => c.color == this.trumpColor);
+			if(trumpCards.length) winningCard = trumpCards.reduce(maxCardFn);
+			else winningCard = this.current_trick.filter(c => c.color == firstColor).reduce(maxCardFn);
+		}
+		
+		var winningPlayer = this.current_trick.map((card) => card.valueOf()).indexOf(winningCard.valueOf());
+		
+		if(sameColorCards.length){
+			if(this.trumpColor == "AllTrump" || this.trumpColor == firstColor){
+				var above = sameColorCards.filter((card) => card.valueOf() > winningCard.valueOf());
+				if(above.length) return above;
+				else return sameColorCards;
+			}
+			else return sameColorCards;
+		}
+		else{
+			if(this.trumpColor == "AllTrump" || this.trumpColor == "NoTrump") return this.cards
+			else{
+				if((this.starting_player + winningPlayer) % 4 == 2){
+					return this.cards;
+				}
+				else{
+					var myTrumps = this.cards.filter((card) => card.color == this.trumpColor);
+					if(myTrumps.length){
+						if(this.trumpColor == firstColor) return this.cards;
+						else{
+							if(winningCard.color == this.trumpColor){
+								var above = myTrumps.filter((card) => card.valueOf() > winningCard.valueOf());
+								if(above.length) return above;
+								else return myTrumps;
+							}
+							else return myTrumps;
+						}
+					}
+					else return this.cards;
+				}
+				//winningPlayer in my team ? -> all
+				// no -> atout supérieur à la coupe (si coupe il y a)
+			}
 		}
 	}
 	

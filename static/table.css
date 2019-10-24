@@ -57,8 +57,8 @@
 
 .hidden{ background-color: rgb(187, 187, 187); }
 .trump{ border: solid 1px orange; }
-.visible{ background-color: #F3F3F3; }
-.card.playable{background-color: white; cursor: pointer;}
+.visible{ background-color: #F1F1F1; }
+.card.playable{background-color: white; cursor: pointer; transform: translate(0, -2px);}
 .card.playable:hover{box-shadow: 0 0 10px white;}
 
 /* card interior */
