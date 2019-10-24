@@ -144,12 +144,11 @@ impl Game {
 							return false;
 						}
 					}
-					BiddingCoincheState::Coinche { .. } | BiddingCoincheState::Surcoinche { .. } => match bids.last() {
-						Some(bid) => bid,
-						None => {
-							return false;
-						}
-					},
+					BiddingCoincheState::Coinche { .. } | BiddingCoincheState::Surcoinche { .. } => bids
+						.iter()
+						.rev()
+						.find(|b| b.bid.is_some())
+						.expect("Shouldn't have C/SCed without bid"),
 				};
 				match player_bid.bid {
 					None => {
