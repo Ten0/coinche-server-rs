@@ -71,9 +71,9 @@ impl BidScore {
 			None => (taking_team_capot, 250),
 		};
 		match (success, coinche_state) {
-			(true, CoincheState::No) => (points_base, def_team_points),
-			(true, CoincheState::Coinche { .. }) => (points_base * 2, 0),
-			(true, CoincheState::Surcoinche { .. }) => (points_base * 4, 0),
+			(true, CoincheState::No) => (points_base + taking_team_points, def_team_points),
+			(true, CoincheState::Coinche { .. }) => (points_base * 2 + taking_team_points, 0),
+			(true, CoincheState::Surcoinche { .. }) => (points_base * 4 + taking_team_points, 0),
 			(false, CoincheState::No) => (0, 160 + points_base),
 			(false, CoincheState::Coinche { .. }) => (0, 160 + points_base * 2),
 			(false, CoincheState::Surcoinche { .. }) => (0, 160 + points_base * 4),

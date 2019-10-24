@@ -70,7 +70,7 @@ impl Game {
 			players: Vec::new(),
 			points: [0, 0],
 			last_round_points: [0, 0],
-			dealer_id: 0,
+			dealer_id: 2,
 			game_state: GameState::Lobby,
 		}
 	}
@@ -118,6 +118,7 @@ impl Game {
 
 	pub fn try_bidding_phase(&mut self) -> bool {
 		if self.game_state.is_lobby() && self.players.len() == 4 {
+			self.dealer_id += 1;
 			let mut deck = Deck::new_shuffled();
 			for player in self.players.iter_mut() {
 				player.cards = deck.draw_n(32 / 4).unwrap();
@@ -196,6 +197,13 @@ impl Game {
 						trick.cards.iter().map(|c| c.points(running.bid.trump)).sum::<f64>();
 					team_capot[!winning_team_id as usize] = false;
 				}
+				match running.tricks.last(){
+					Some(last_trick) => {
+						let last_trick_winning_team_id = Player::team(last_trick.winner_id);
+						team_points[last_trick_winning_team_id as usize] += 10.0;
+					},
+					None => {},
+				};
 				let taking_team_points = team_points[running.team as usize].floor() as usize;
 				let def_team_points = team_points[!running.team as usize].floor() as usize;
 				let taking_team_capot = team_capot[running.team as usize];
