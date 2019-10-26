@@ -21,37 +21,40 @@ impl StreamHandler<ws::Message, ws::ProtocolError> for WebSocket {
 	fn handle(&mut self, msg: ws::Message, ctx: &mut Self::Context) {
 		match msg {
 			ws::Message::Ping(msg) => ctx.pong(&msg),
-			ws::Message::Text(text) => match serde_json::from_str::<ClientMessage>(&text) {
-				Err(deser_err) => ctx.text(
-					ServerMessage::Error {
-						message: &deser_err.to_string(),
+			ws::Message::Text(text) => {
+				debug!("Got message from {:?}: {}", self.player_id, text);
+				match serde_json::from_str::<ClientMessage>(&text) {
+					Err(deser_err) => ctx.text(
+						ServerMessage::Error {
+							message: &deser_err.to_string(),
+						}
+						.to_json_string(),
+					),
+					Ok(client_message) => {
+						self.game_addr
+							.send(ClientGameMessage {
+								message: client_message,
+								player_id: self.player_id,
+								web_socket: ctx.address(),
+							})
+							.into_actor(self)
+							.then(|res, act, ctx| {
+								match res.unwrap() {
+									Ok(Some(player_id)) => act.player_id = Some(player_id),
+									Ok(None) => (),
+									Err(err) => ctx.text(
+										ServerMessage::Error {
+											message: &format!("{:?}", err),
+										}
+										.to_json_string(),
+									),
+								}
+								fut::ok(())
+							})
+							.wait(ctx);
 					}
-					.to_json_string(),
-				),
-				Ok(client_message) => {
-					self.game_addr
-						.send(ClientGameMessage {
-							message: client_message,
-							player_id: self.player_id,
-							web_socket: ctx.address(),
-						})
-						.into_actor(self)
-						.then(|res, act, ctx| {
-							match res.unwrap() {
-								Ok(Some(player_id)) => act.player_id = Some(player_id),
-								Ok(None) => (),
-								Err(err) => ctx.text(
-									ServerMessage::Error {
-										message: &format!("{:?}", err),
-									}
-									.to_json_string(),
-								),
-							}
-							fut::ok(())
-						})
-						.wait(ctx);
 				}
-			},
+			}
 			ws::Message::Binary(_) => ctx.text("Not expecting binary"),
 			ws::Message::Close(_) => ctx.stop(),
 			ws::Message::Nop | ws::Message::Pong(_) => (),
