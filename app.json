@@ -1,0 +1,8 @@
+{
+	"name": "Coinche server",
+	"buildpacks": [
+		{
+			"url": "https://github.com/emk/heroku-buildpack-rust"
+		}
+	]
+}
