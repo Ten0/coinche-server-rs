@@ -1,5 +1,7 @@
 <div>
-	Entrez votre nom :
-	<input type="text" id="user" />
-	<button onclick="window.location = '/table.html?user=' + document.getElementById('user').value;">OK</button>
+	<form action="table.html" method="get" id="form">
+		Entrez votre nom :
+		<input type="text" name="user" />
+		<button onclick="document.getElementById('form').submit();">OK</button>
+	</form>
 </div>
