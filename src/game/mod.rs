@@ -94,7 +94,9 @@ impl Game {
 	pub fn add_player(&mut self, player: Player) -> crate::Result<usize> {
 		// Try find user again
 		if let Some(id) = self.players.iter().position(|p| p.username == player.username) {
-			self.players[id] = player;
+			self.players[id].web_socket = player.web_socket;
+			let player = self.player(id);
+			player.send_refresh_all()?;
 			Ok(id)
 		} else {
 			if self.players.len() >= 4 {
