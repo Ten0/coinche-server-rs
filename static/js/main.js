@@ -12,16 +12,16 @@ window.addEventListener("load", function () {
 		alert("Please enter an username in the url : [...].html?user=<your name>");
 	}
 
-	let match = window.location.href.match(/^http(?<secure>s?):\/\/(?<hostname>[^/]*)/)
+	let match = window.location.href.match(/^http(?<secure>s?):\/\/(?<hostname>[^/]*)/);
 	if (match) {
-		let { secure, hostname } = match.groups
+		let { secure, hostname } = match.groups;
 		socket = new WebSocket(`ws${secure}://${hostname}/ws/`);
 		socket.onopen = function (event) {
 			send("Init", { username: user });
 		}
 		socket.onmessage = onmessage;
 	} else {
-		alert("Could not parse url")
+		alert("Could not parse url");
 	}
 
 });
