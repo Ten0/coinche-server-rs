@@ -5,8 +5,11 @@ use crate::prelude::*;
 
 use actix::prelude::*;
 use actix_files as fs;
-use actix_service::Service;
-use actix_web::{dev::Server, http::header, middleware, web, App, HttpResponse, HttpServer};
+use actix_web::{
+	dev::{Server, Service},
+	http::header::{self, HeaderValue},
+	middleware, web, App, HttpResponse, HttpServer,
+};
 use futures::future::{ok, Either};
 use std::{sync::mpsc, thread};
 
@@ -30,9 +33,20 @@ pub fn start(port: u16) -> Server {
 						let host_header = headers.get(header::HOST);
 						let host_header_str = host_header.and_then(|h| h.to_str().ok()).unwrap_or("perdu.com");
 						let location = format!("https://{}{}", host_header_str, req.path());
-						Either::B(ok(req.into_response(HttpResponse::Found().header(header::LOCATION, location).finish().into_body())))
+						Either::B(ok(req.into_response(
+							HttpResponse::MovedPermanently()
+								.header(header::LOCATION, location)
+								.finish()
+								.into_body(),
+						)))
 					} else {
-						Either::A(srv.call(req))
+						Either::A(srv.call(req).map(|mut res| {
+							res.headers_mut().insert(
+								header::STRICT_TRANSPORT_SECURITY,
+								HeaderValue::from_static("max-age=31536000; includeSubDomains; preload"),
+							);
+							res
+						}))
 					}
 				})
 				.route("/ws/", web::get().to(websocket::index)) // websocket route
