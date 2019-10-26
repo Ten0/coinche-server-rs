@@ -1,14 +1,13 @@
 pub mod game;
+pub mod logging;
+pub mod messages;
 pub mod player;
-pub mod rcs;
 pub mod server;
-pub mod static_files;
-pub mod websocket;
 
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
-extern crate derive_deref;
+extern crate log;
 
 pub type Result<T> = std::result::Result<T, failure::Error>;
 
@@ -17,12 +16,12 @@ mod prelude {
 	pub use cards::*;
 	pub use contract::*;
 	pub use game::*;
+	pub use messages::{ClientMessage, ServerMessage};
 	pub use player::*;
-	pub use rcs::{GameArc, PlayerArc};
-	pub use server::{ClientMessage, ServerMessage};
-	pub use websocket::Socket;
+	pub use server::websocket::WebSocket;
 
+	pub use actix::Addr;
 	pub use failure::err_msg;
+	pub use std::borrow::Borrow;
 	pub use std::sync::{Arc, Mutex, MutexGuard};
-	pub use ws::Sender;
 }

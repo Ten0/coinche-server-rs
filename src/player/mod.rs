@@ -10,26 +10,30 @@ pub struct Player {
 	#[serde(skip)]
 	pub cards: Vec<Card>,
 	#[serde(skip)]
-	pub sender: Arc<Sender>,
+	pub web_socket: Addr<WebSocket>,
 }
 
-#[derive(Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, Copy, Deserialize)]
 pub enum PlayerCardIdentifier {
 	CardPos(usize),
 	Card(Card),
 }
 
 impl Player {
-	pub fn new(sender: Arc<Sender>, username: String) -> Self {
+	pub fn new(username: String, web_socket: Addr<WebSocket>) -> Self {
 		Self {
 			username,
 			cards: Vec::new(),
-			sender,
+			web_socket,
 		}
 	}
 
-	pub fn send(&self, msg: impl Into<ws::Message>) -> crate::Result<()> {
-		Ok(self.sender.send(msg)?)
+	pub fn send<'a>(&self, msg: impl Borrow<ServerMessage<'a>>) -> crate::Result<()> {
+		self.web_socket
+			.do_send(crate::server::websocket::JsonifiedServerMessage(
+				msg.borrow().to_json_string(),
+			));
+		Ok(())
 	}
 
 	pub fn find_card(&self, card_identifier: PlayerCardIdentifier) -> Option<(usize, Card)> {
@@ -98,5 +102,17 @@ impl<G: Deref<Target = Game>> PlayerPtr<G> {
 
 	pub fn team(&self) -> bool {
 		Player::team(self.player_id)
+	}
+}
+
+impl std::fmt::Debug for Player {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "Player({})", &self.username)
+	}
+}
+
+impl<G: Deref<Target = Game>> std::fmt::Debug for PlayerPtr<G> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		self.deref().fmt(f)
 	}
 }

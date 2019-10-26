@@ -1,18 +1,23 @@
 use coinche::*;
+
 use futures::Future;
-use std::env;
-use std::sync::mpsc;
+use std::{env, sync::mpsc};
+
+#[macro_use]
+extern crate log;
 
 fn main() {
-	websocket::start_server(env::args().nth(1).map_or(false, |s| s == "-v"));
-	println!("WebSocket server listening on 0.0.0.0:3000");
-	let static_server = static_files::start_server();
-	println!("Static files server listening on 0.0.0.0:3001");
+	logging::init_logger().expect("Failed to initialize logger");
+	let port: u16 = env::var("PORT")
+		.ok()
+		.map_or(3000, |p| p.parse().expect("Invalid port value in env var"));
+	let server = server::start(port);
+	info!("Server listening on 0.0.0.0:{}", port);
 	let (stop_s, stop_r) = mpsc::channel();
 	ctrlc::set_handler(move || {
 		stop_s.send(()).unwrap();
 	})
 	.expect("Error setting Ctrl-C handler");
 	stop_r.recv().unwrap();
-	static_server.stop(true).wait().unwrap();
+	server.stop(true).wait().unwrap();
 }

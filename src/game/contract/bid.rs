@@ -1,18 +1,18 @@
 use crate::prelude::*;
 
-#[derive(Serialize, Clone, Copy)]
+#[derive(Debug, Serialize, Clone, Copy)]
 pub struct PlayerBid {
 	pub player_id: usize,
 	pub bid: Option<Bid>,
 }
 
-#[derive(Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Bid {
 	pub trump: Trump,
 	pub score: BidScore,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum BidScore {
 	#[serde(rename = "80")]
 	_80,
