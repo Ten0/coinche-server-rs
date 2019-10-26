@@ -9,8 +9,8 @@ pub struct Player {
 	pub username: String,
 	#[serde(skip)]
 	pub cards: Vec<Card>,
-	//#[serde(skip)]
-	//pub sender: Arc<Sender>,
+	#[serde(skip)]
+	pub web_socket: Addr<WebSocket>,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize)]
@@ -20,15 +20,19 @@ pub enum PlayerCardIdentifier {
 }
 
 impl Player {
-	pub fn new(username: String) -> Self {
+	pub fn new(username: String, web_socket: Addr<WebSocket>) -> Self {
 		Self {
 			username,
 			cards: Vec::new(),
+			web_socket,
 		}
 	}
 
 	pub fn send<'a>(&self, msg: impl Borrow<ServerMessage<'a>>) -> crate::Result<()> {
-		debug!("Sending message to {}: {:?}", self.username, msg.borrow());
+		self.web_socket
+			.do_send(crate::server::websocket::JsonifiedServerMessage(
+				msg.borrow().to_json_string(),
+			));
 		Ok(())
 	}
 
@@ -104,5 +108,11 @@ impl<G: Deref<Target = Game>> PlayerPtr<G> {
 impl std::fmt::Debug for Player {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(f, "Player({})", &self.username)
+	}
+}
+
+impl<G: Deref<Target = Game>> std::fmt::Debug for PlayerPtr<G> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		self.deref().fmt(f)
 	}
 }

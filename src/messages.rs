@@ -47,35 +47,48 @@ pub enum ServerMessage<'a> {
 	},
 }
 
-impl Socket {
-	pub fn handle_msg(&mut self, msg: ClientMessage) -> crate::Result<()> {
-		println!("Got message from {:?}: {:?}", self, &msg);
-		/*match &self.player {
-			Err(game_arc) => match msg {
+impl Game {
+	pub fn handle_msg(
+		&mut self,
+		player_id: Option<usize>,
+		msg: ClientMessage,
+		web_socket: Addr<WebSocket>,
+	) -> crate::Result<Option<usize>> {
+		match player_id {
+			None => match msg {
 				ClientMessage::Init { username } => {
-					self.player = Ok(PlayerArc::new(game_arc.clone(), self.sender.clone(), username)?);
+					return Ok(Some(self.add_player(Player::new(username, web_socket))?));
 				}
 				_ => return Err(err_msg("Client not initialized")),
 			},
-			Ok(player) => match msg {
-				ClientMessage::Init { .. } => return Err(err_msg("Already initialized")),
-				ClientMessage::RefreshGameState => {
-					player.qlock().send_refresh_all()?;
+			Some(player_id) => {
+				let mut player = self.player_mut(player_id);
+				match msg {
+					ClientMessage::Init { .. } => return Err(err_msg("Already initialized")),
+					ClientMessage::RefreshGameState => {
+						player.send_refresh_all()?;
+					}
+					ClientMessage::Bid(bid) => {
+						player.bid(bid)?;
+					}
+					ClientMessage::Coinche => {
+						player.coincher()?;
+					}
+					ClientMessage::SurCoinche(do_surcoinche) => {
+						player.surcoincher(do_surcoinche)?;
+					}
+					ClientMessage::PlayCard(card_identifier) => {
+						player.play_card(card_identifier)?;
+					}
 				}
-				ClientMessage::Bid(bid) => {
-					player.qlock().bid(bid)?;
-				}
-				ClientMessage::Coinche => {
-					player.qlock().coincher()?;
-				}
-				ClientMessage::SurCoinche(do_surcoinche) => {
-					player.qlock().surcoincher(do_surcoinche)?;
-				}
-				ClientMessage::PlayCard(card_identifier) => {
-					player.qlock().play_card(card_identifier)?;
-				}
-			},
-		}*/
-		Ok(())
+			}
+		}
+		Ok(None)
+	}
+}
+
+impl<'a> ServerMessage<'a> {
+	pub fn to_json_string(&self) -> String {
+		serde_json::to_string(self).unwrap()
 	}
 }
