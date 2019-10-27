@@ -4,6 +4,6 @@
 		"@types/jquery": "^3.3.31"
 	},
 	"scripts": {
-		"postinstall": "tsc"
+		"postinstall": "./node_modules/.bin/tsc"
 	}
 }
