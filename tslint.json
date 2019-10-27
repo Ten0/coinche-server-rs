@@ -1,0 +1,89 @@
+{
+	"defaultSeverity": "error",
+	"extends": [
+		"tslint:recommended"
+	],
+	"jsRules": {},
+	"linterOptions": {
+		"exclude": [
+			"*/dist/*"
+		],
+		"format": "verbose"
+	},
+	"rules": {
+		"arrow-parens": [
+			true,
+			"ban-single-arg-parens"
+		],
+		"await-promise": [
+			true,
+			"RequestPromise"
+		],
+		"curly": [
+			false
+		],
+		"forin": false,
+		"indent": [
+			true,
+			"tabs",
+			4
+		],
+		"interface-name": false,
+		"interface-over-type-literal": false,
+		"max-classes-per-file": false,
+		"max-line-length": [
+			true,
+			120
+		],
+		"member-ordering": [
+			false
+		],
+		"new-parens": false,
+		"no-consecutive-blank-lines": [
+			true,
+			2
+		],
+		"no-console": false,
+		"no-floating-promises": true,
+		"no-shadowed-variable": false,
+		"no-unused-expression": true,
+		"object-literal-sort-keys": false,
+		"quotemark": [
+			true,
+			"double",
+			"avoid_template",
+			"avoid_escape"
+		],
+		"semicolon": [
+			true,
+			"always"
+		],
+		"triple-equals": true,
+		"typedef": [
+			true,
+			"call-signature",
+			"property-declaration"
+		],
+		"variable-name": [
+			true,
+			"ban-keywords",
+			"check-format",
+			"allow-leading-underscore"
+		],
+		"whitespace": [
+			true,
+			"check-branch",
+			"check-decl",
+			"check-operator",
+			"check-module",
+			"check-separator",
+			"check-rest-spread",
+			"check-type",
+			"check-typescast",
+			"check-type-operator",
+			"check-preblock",
+			"check-postbrace"
+		]
+	},
+	"rulesDirectory": []
+}

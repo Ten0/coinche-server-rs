@@ -1,0 +1,9 @@
+{
+	"dependencies": {
+		"typescript": "^3.6.4",
+		"@types/jquery": "^3.3.31"
+	},
+	"scripts": {
+		"postinstall": "tsc"
+	}
+}

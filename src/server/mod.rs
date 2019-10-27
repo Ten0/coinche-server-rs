@@ -50,7 +50,7 @@ pub fn start(port: u16) -> Server {
 					}
 				})
 				.route("/ws/", web::get().to(websocket::index)) // websocket route
-				.service(fs::Files::new("/", "./static").index_file("index.html")) // static files
+				.service(fs::Files::new("/", "./front/static").index_file("index.html")) // static files
 		})
 		.disable_signals()
 		.bind((std::net::Ipv4Addr::UNSPECIFIED, port)) // 0.0.0.0:port
