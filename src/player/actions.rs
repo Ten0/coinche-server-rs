@@ -125,6 +125,7 @@ impl<G: DerefMut<Target = Game>> PlayerPtr<G> {
 				ref mut board,
 				ref mut tricks,
 				ref bid,
+				ref mut belote_player,
 				..
 			}) => {
 				if ((board.starting_player_id + board.cards.len()) % 4) == self.player_id {
@@ -188,17 +189,47 @@ impl<G: DerefMut<Target = Game>> PlayerPtr<G> {
 						if can_play {
 							board.cards.push(try_play_card);
 							players[self.player_id].cards.remove(card_pos);
+							let mut belote_notification = None;
+							if let Trump::Suit(trump_suit) = bid.trump {
+								if try_play_card.suit == trump_suit {
+									if belote_player.is_none() {
+										let look_for_value = match try_play_card.value {
+											Value::King => Some(Value::Queen),
+											Value::Queen => Some(Value::King),
+											_ => None,
+										};
+										if let Some(look_for_value) = look_for_value {
+											if players[self.player_id].cards.contains(&Card {
+												suit: trump_suit,
+												value: look_for_value,
+											}) {
+												*belote_player = Some(self.player_id);
+												belote_notification = Some(BeloteRebelote::Belote);
+											}
+										}
+									} else if *belote_player == Some(self.player_id) {
+										match try_play_card.value {
+											Value::King | Value::Queen => {
+												belote_notification = Some(BeloteRebelote::Rebelote)
+											}
+											_ => (),
+										};
+									}
+								}
+							}
 							for player in players.iter() {
 								let _ = player.send(ServerMessage::PlayedCard {
 									player_id: self.player_id,
 									card: try_play_card,
 									card_pos,
+									belote_rebelote: belote_notification,
 								});
 							}
 							// See if that closes the trick
 							if board.cards.len() == 4 {
 								let winner_id = board.winning_player_id(bid.trump).unwrap();
 								tricks.push(Trick {
+									starting_player_id: board.starting_player_id,
 									winner_id,
 									cards: std::mem::replace(&mut board.cards, Vec::new()),
 								});

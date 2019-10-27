@@ -30,6 +30,7 @@ pub struct RunningGame {
 	pub tricks: Vec<Trick>,
 	pub coinche_state: CoincheState,
 	pub board: Board,
+	pub belote_player: Option<usize>,
 }
 
 #[derive(Debug, Serialize)]
@@ -40,6 +41,7 @@ pub struct Board {
 
 #[derive(Debug, Serialize)]
 pub struct Trick {
+	pub starting_player_id: usize,
 	pub winner_id: usize,
 	pub cards: Vec<Card>,
 }
@@ -178,6 +180,7 @@ impl Game {
 								},
 							},
 							tricks: Vec::new(),
+							belote_player: None,
 						});
 						self.send_game_state_all();
 						true
@@ -200,6 +203,9 @@ impl Game {
 					team_capot[!winning_team_id as usize] = false;
 				}
 				team_points[Player::team(running.tricks.last().unwrap().winner_id) as usize] += 10.;
+				if let Some(belote_player) = running.belote_player {
+					team_points[Player::team(belote_player) as usize] += 20.;
+				}
 				let taking_team_points = team_points[running.team as usize].floor() as usize;
 				let def_team_points = team_points[!running.team as usize].floor() as usize;
 				let taking_team_capot = team_capot[running.team as usize];
@@ -278,4 +284,10 @@ impl Board {
 				% 4,
 		)
 	}
+}
+
+#[derive(Debug, Serialize, Clone, Copy, PartialEq, Eq)]
+pub enum BeloteRebelote {
+	Belote,
+	Rebelote,
 }

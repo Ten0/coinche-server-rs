@@ -38,6 +38,7 @@ pub enum ServerMessage<'a> {
 		player_id: usize,
 		card_pos: usize,
 		card: Card,
+		belote_rebelote: Option<BeloteRebelote>,
 	},
 	Trick {
 		winner_id: usize,
