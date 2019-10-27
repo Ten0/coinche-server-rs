@@ -4,6 +4,7 @@ use crate::prelude::*;
 use actix::prelude::*;
 use actix_web::{web, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
+use std::time::Duration;
 
 /// Define http actor
 #[derive(Debug)]
@@ -14,6 +15,12 @@ pub struct WebSocket {
 
 impl Actor for WebSocket {
 	type Context = ws::WebsocketContext<Self>;
+
+	fn started(&mut self, ctx: &mut Self::Context) {
+		// Keep WS alive by sending regular pings
+		// (heroku's proxy disconnects idle connections)
+		ctx.run_interval(Duration::from_secs(5), |_act, ctx| ctx.ping(""));
+	}
 }
 
 /// Handler for ws::Message message
