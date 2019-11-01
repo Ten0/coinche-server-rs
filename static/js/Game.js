@@ -39,7 +39,7 @@ class Card {
 	}
 
 	get trump() {
-		return (game.trumpColor && game.trumpColor == this.color);
+		return (game.trumpColor && (game.trumpColor == this.color || game.trumpColor == "AllTrump"));
 	}
 
 	valueOf() {
@@ -105,7 +105,7 @@ class Game {
 			console.log(this.turn);
 			vue.displayTrick(this.starting_player, this.current_trick);
 			vue.displayAllBids(this.bids);
-			this.cardTurn();
+			if(this.cards !== undefined) this.cardTurn();
 		}
 	}
 
@@ -281,8 +281,6 @@ class Game {
 					}
 					else return this.cards;
 				}
-				//winningPlayer in my team ? -> all
-				// no -> atout supérieur à la coupe (si coupe il y a)
 			}
 		}
 	}
