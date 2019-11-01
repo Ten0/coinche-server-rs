@@ -8,9 +8,18 @@ use crate::prelude::*;
 pub struct Game {
 	pub players: Vec<Player>,
 	pub points: [usize; 2],
-	pub last_round_points: [usize; 2],
+	pub round_points: Vec<RoundPoints>,
 	pub dealer_id: usize,
 	pub game_state: GameState,
+}
+
+#[derive(Debug, Serialize)]
+pub struct RoundPoints {
+	pub points: [usize; 2],
+	pub bid: Bid,
+	pub scored_points: [usize; 2],
+	pub team: bool,
+
 }
 
 #[derive(Debug, Serialize)]
@@ -71,7 +80,7 @@ impl Game {
 		Self {
 			players: Vec::new(),
 			points: [0, 0],
-			last_round_points: [0, 0],
+			round_points: Vec::new(),
 			dealer_id: 2,
 			game_state: GameState::Lobby,
 		}
@@ -217,8 +226,12 @@ impl Game {
 				);
 				self.points[running.team as usize] += taking_points;
 				self.points[!running.team as usize] += def_points;
-				self.last_round_points[running.team as usize] = taking_points;
-				self.last_round_points[!running.team as usize] = def_points;
+				self.round_points.push(RoundPoints{
+					team: running.team,
+					bid: running.bid,
+					points: [taking_points, def_points],
+					scored_points: [taking_team_points, def_team_points]
+				});
 				self.game_state = GameState::Lobby;
 				if !self.try_bidding_phase() {
 					self.send_refresh_all_all();
