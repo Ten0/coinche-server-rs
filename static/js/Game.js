@@ -83,10 +83,18 @@ class Game {
 			this.trumpColor = undefined;
 			for (const pbid of state.bids) {
 				const player = this.localPlayerId(pbid.player_id);
-				this.bids[player] = serde.playerBid(pbid, state.coinche_state);
-				this.turn = player;
+				this.bids[player] = serde.playerBid(pbid);
 			}
-			this.turn = (this.first_player + state.bids.length) % 4;
+			const [coinche_state, coinche_infos] = serde.datatype(state.coinche_state);
+			if(coinche_state == "Coinche"){
+				const doubler = this.localPlayerId(coinche_infos.player_id);
+				this.bids[doubler] = new Bid("double");
+				this.highestBid.doubleIt();
+				this.turn = (doubler + 1) % 4;
+			}
+			else{
+				this.turn = (this.first_player + state.bids.length) % 4;
+			}
 			vue.displayAllBids(this.bids);
 			this.bidTurn();
 		}

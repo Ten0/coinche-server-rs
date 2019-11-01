@@ -8,7 +8,7 @@ function send(type, data) {
 
 function attemptBid(bid) {
 	if (bid.isPass) {
-		if (game.highestBid && game.highestBid.isDoubled) {
+		if (game.highestBid && game.highestBid.multiplier == 2) {
 			send("SurCoinche", false);
 			vue.hideBidPicker();
 		}
@@ -119,12 +119,15 @@ const serde = {
 		let [trump, color] = serde.datatype(obj.trump);
 		if (trump == "Suit") trump = color;
 		let bid = new Bid("bid", val, trump);
-		[cs, ] = serde.datatype(cs);
-		if (cs == "Coinche") bid.doubleIt();
-		if (cs == "Surcoinche") {
-			bid.doubleIt();
-			bid.doubleIt();
+		if(cs !== undefined){
+			[cs, ] = serde.datatype(cs);
+			if (cs == "Coinche") bid.doubleIt();
+			if (cs == "Surcoinche") {
+				bid.doubleIt();
+				bid.doubleIt();
+			}
 		}
+
 		return bid;
 	},
 	playerBid: function (obj, cs) {
