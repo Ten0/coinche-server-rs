@@ -1,4 +1,4 @@
-var valuesHtml = {
+const valuesHtml = {
 	"Seven": "7",
 	"Eight": "8",
 	"Nine": "9",
@@ -9,7 +9,7 @@ var valuesHtml = {
 	"Ace": "A",
 };
 
-var colorsHtml = {
+const colorsHtml = {
 	"Spades": "&#9824;",
 	"Hearts": "&hearts;",
 	"Clubs": "&clubs;",
@@ -21,14 +21,14 @@ var colorsHtml = {
 /* DOM events */
 
 function onCardClick(evt) {
-	var data = JSON.parse($(this).attr("data"));
-	var card = new Card(data.color, data.value);
+	let data = JSON.parse($(this).attr("data"));
+	let card = new Card(data.color, data.value);
 	attemptPlay(card);
 }
 
 function onBidChange(evt) {
-	var value = $('input:checked', '#bid-value-picker').val();
-	var color = $('input:checked', '#bid-color-picker').val();
+	let value = $('input:checked', '#bid-value-picker').val();
+	let color = $('input:checked', '#bid-color-picker').val();
 	if (color !== undefined && value !== undefined) {
 		attemptBid(new Bid("bid", value, color));
 	}
@@ -37,6 +37,9 @@ function onBidChange(evt) {
 /* --- HTML generation --- */
 
 class Vue {
+
+	static sides = ["bottom", "right", "top", "left"];
+	static clockwiseSides = ["bottom", "left", "top", "right"];
 
 	constructor(clockwise) {
 		this.clockwise = clockwise;
@@ -56,7 +59,7 @@ class Vue {
 	unfreeze() {
 		this.freezed = false;
 		while (!this.freezed && this.stack.length > 0) {
-			var exec = this.stack.shift();
+			const exec = this.stack.shift();
 			this[exec[0]](...exec[1]);
 		}
 	}
@@ -66,26 +69,24 @@ class Vue {
 	}
 
 	sideOfPlayer(player) {
-		var sides = ["bottom", "right", "top", "left"];
-		if (this.clockwise) sides = ["bottom", "left", "top", "right"];
-		return sides[player];
+		return (this.clockwise ? Vue.clockwiseSides : Vue.sides)[player];
 	}
 
 	handOfPlayer(player) {
-		return $("#" + this.sideOfPlayer(player) + "-hand");
+		return $(`#${this.sideOfPlayer(player)}-hand`);
 	}
 
 	bidOfPlayer(player) {
-		return $("#" + this.sideOfPlayer(player) + "-bid");
+		return $(`#${this.sideOfPlayer(player)}-bid`);
 	}
 
 	nameEltOfPlayer(player) {
-		return $("#" + this.sideOfPlayer(player) + "-name");
+		return $(`#${this.sideOfPlayer(player)}-name`);
 	}
 
 	genCard(player, card) {
-		var side = this.sideOfPlayer(player);
-		var elt;
+		const side = this.sideOfPlayer(player);
+		let elt;
 		if (card === undefined) {
 			elt = $('<div class="card hidden"><div></div></div>');
 		}
@@ -103,32 +104,32 @@ class Vue {
 
 	drawOtherHand(player, nb_cards) {
 		if (this.freezed) return this.push("drawOtherHand", player, nb_cards);
-		var hand = this.handOfPlayer(player);
+		let hand = this.handOfPlayer(player);
 		hand.html("");
-		for (var i = 0; i < nb_cards; i++) {
+		for (let i = 0; i < nb_cards; i++) {
 			hand.append(this.genCard(player));
 		}
 	}
 
 	drawMyHand(cards) {
 		if (this.freezed) return this.push("drawMyHand", cards);
-		var hand = this.handOfPlayer(0);
+		let hand = this.handOfPlayer(0);
 		hand.html("");
-		for (var card of cards) {
+		for (const card of cards) {
 			hand.append(this.genCard(0, card));
 		}
 	}
 
 	displayTrick(starting_player, cards) {
 		if (this.freezed) return this.push("displayTrick", starting_player, cards);
-		for (var i = 0; i < cards.length; i++) {
+		for (let i = 0; i < cards.length; i++) {
 			this.playCard((starting_player + i) % 4, cards[i], true);
 		}
 	}
 
 	playCard(player, card, forceCreate) {
 		if (this.freezed) return this.push("playCard", player, card, forceCreate);
-		var elt;
+		let elt;
 		if (player == 0 && !forceCreate) elt = $(".card#" + card.toString());
 		else {
 			elt = this.genCard(player, card);
@@ -145,8 +146,8 @@ class Vue {
 	makeCardsPlayable(playableCards) {
 		if (this.freezed) return this.push("makeCardsPlayable", playableCards);
 		$(".card.bottom").unbind("click");
-		for (var card of playableCards) {
-			var elt = $(".card#" + card.toString());
+		for (const card of playableCards) {
+			let elt = $(".card#" + card.toString());
 			elt.addClass("playable");
 			elt.click(onCardClick);
 		}
@@ -161,14 +162,14 @@ class Vue {
 	displayAllBids(bids) {
 		if (this.freezed) return this.push("displayAllBids", bids);
 		$(".bid").html("");
-		for (var player in bids) {
+		for (const player in bids) {
 			this.displayBid(player, bids[player]);
 		}
 	}
 
 	displayBid(player, bid) {
 		if (this.freezed) return this.push("displayBid", player, bid);
-		var elt = this.bidOfPlayer(player);
+		let elt = this.bidOfPlayer(player);
 		elt.css("color", "black");
 		if (bid.isPass || bid.isDouble || bid.isDoubledDouble) {
 			if (bid.isPass) elt.html("-");
@@ -178,8 +179,8 @@ class Vue {
 		else {
 			if (bid.color == "Diamonds" || bid.color == "Hearts") elt.css("color", "red");
 			elt.html(bid.value + " " + colorsHtml[bid.color]);
-			if (bid.isDoubled) elt.append("<span>C</span>");
-			if (bid.isDoubleDoubled) elt.append("<span>CC</span>");
+			if (bid.multiplier == 2) elt.append("<span>C</span>");
+			if (bid.multiplier == 4) elt.append("<span>CC</span>");
 		}
 		elt.show();
 	}
@@ -195,9 +196,9 @@ class Vue {
 		$("#bid-picker label").removeClass("disabled");
 		$("#bid-picker input").removeAttr("disabled");
 
-		for (var elt of $("#bid-value-picker label")) {
+		for (let elt of $("#bid-value-picker label")) {
 			elt = $(elt)
-			var val = $("#" + elt.attr("for")).val();
+			const val = $("#" + elt.attr("for")).val();
 			if (val <= minimumBid) {
 				$("#" + elt.attr("for")).attr("disabled", "");
 				elt.addClass("disabled");
@@ -273,7 +274,7 @@ class Vue {
 	}
 
 	showNames(players) {
-		for (var player in players) {
+		for (const player in players) {
 			this.nameEltOfPlayer(game.localPlayerId(parseInt(player))).text(players[player].username);
 		}
 	}

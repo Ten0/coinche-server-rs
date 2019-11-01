@@ -21,11 +21,11 @@ function attemptBid(bid) {
 		send("SurCoinche", true);
 	}
 	else {
-		var score = bid.value.toString()
+		let score = bid.value.toString()
 		if (score == "250") score = "Capot";
-		var bid_obj = {
-			"trump": { "Suit": bid.color },
-			"score": score
+		let bid_obj = {
+			trump: { Suit: bid.color },
+			score: score
 		}
 		if (bid.color == "NoTrump" || bid.color == "AllTrump") bid_obj["trump"] = bid.color;
 		send("Bid", bid_obj);
@@ -38,13 +38,9 @@ function attemptPlay(card) {
 
 /* ------ handlers ---- */
 
-var game;
-
 function onmessage(event) {
 	try {
-		var data = JSON.parse(event.data);
-		var type = Object.keys(data)[0];
-		data = data[type];
+		const [type, data] = serde.datatype(JSON.parse(event.data));
 		console.log(type, data);
 		if (messageHandlers[type] === undefined) {
 			console.error("unknow message type", data);
@@ -60,16 +56,16 @@ function onmessage(event) {
 
 }
 
-var messageHandlers = {
+const messageHandlers = {
 	Game: function (data) {
-		if (game == undefined) {
+		if (game === undefined) {
 			game = new Game(data.player_id);
 		}
 		game.loadState(data.game);
 	},
 
 	Cards: function (data) {
-		var cards = data.cards.map(serde.card);
+		let cards = data.cards.map(serde.card);
 		game.setCards(cards);
 	},
 
@@ -78,7 +74,7 @@ var messageHandlers = {
 	},
 
 	PlayerBid: function (data) {
-		var bid = serde.playerBid(data, "No");
+		let bid = serde.playerBid(data, "No");
 		game.doBid(game.localPlayerId(data.player_id), bid);
 	},
 
@@ -91,13 +87,13 @@ var messageHandlers = {
 	},
 
 	PlayedCard: function (data) {
-		var card = new Card(data.card.suit, data.card.value);
-		var player = game.localPlayerId(data.player_id);
+		const card = new Card(data.card.suit, data.card.value);
+		const player = game.localPlayerId(data.player_id);
 		game.playCard(player, card);
 	},
 
 	Trick: function (data) {
-		var winner = game.localPlayerId(data.winner_id);
+		const winner = game.localPlayerId(data.winner_id);
 		game.trickWon(winner);
 	},
 
@@ -106,25 +102,24 @@ var messageHandlers = {
 	},
 }
 
-/* ---- game logic --- */
-
-var serde = {
+const serde = {
 	datatype: function (obj) {
-		if (typeof (obj) == "string") return obj;
-		else return Object.keys(obj)[0];
+		if (typeof(obj) == "string") return [obj, null];
+		else{
+			const type = Object.keys(obj)[0];
+			return [type, obj[type]];
+		} 
 	},
 	card: function (obj) {
 		return new Card(obj.suit, obj.value);
 	},
 	bid: function (obj, cs) {
 		if (obj === null) return new Bid("pass");
-		var val = obj.score;
-		if (val == "C") val = "250";
-		val = parseInt(val);
-		var trump = serde.datatype(obj.trump);
-		if (trump == "Suit") trump = obj.trump.Suit;
-		var bid = new Bid("bid", val, trump);
-		cs = serde.datatype(cs);
+		const val = obj.score === "C" ? 250 : parseInt(obj.score);
+		let [trump, color] = serde.datatype(obj.trump);
+		if (trump == "Suit") trump = color;
+		let bid = new Bid("bid", val, trump);
+		[cs, ] = serde.datatype(cs);
 		if (cs == "Coinche") bid.doubleIt();
 		if (cs == "Surcoinche") {
 			bid.doubleIt();

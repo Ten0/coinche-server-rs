@@ -2,21 +2,20 @@
 /* ---- bid class ---- */
 class Bid {
 
-	constructor(type, value, color) {
+	static types = ["bid", "pass", "double", "doubled-double"];
+
+	constructor(type, value, color, multiplier) {
+		console.assert(Bid.types.includes(type), `Unrecognized type argument : ${type}`);
 		this.type = type;
-		if (value === undefined) this.value = 0;
-		else this.value = value;
-		this.color = color;
-		this.isDoubled = false;
-		this.isDoubleDoubled = false;
+		this.value = value === undefined ? 0 : value;
+		this.color = color === undefined ? null : color;
+		this.multiplier = multiplier === undefined ? 1 : multiplier;
 	}
 
 	doubleIt() {
-		if (this.isDoubled) {
-			this.isDoubled = false;
-			this.isDoubleDoubled = true;
-		}
-		else this.isDoubled = true;
+		console.assert(this.type == "bid", `Can't double a bid of type ${this.color}`);
+		console.assert(this.multiplier == 1 || this.multiplier == 2, `Can't double a bid with a multiplier = ${this.multiplier}`);
+		this.multiplier *= 2;
 	}
 
 	get isPass() { return this.type == "pass"; }
@@ -29,11 +28,13 @@ class Bid {
 // known card
 class Card {
 
-	colors = ["Spades", "Hearts", "Clubs", "Diamonds"];
-	values = ["Seven", "Eight", "Nine", "Jack", "Queen", "King", "Ten", "Ace"];
-	valuesTrump = ["Seven", "Eight", "Queen", "King", "Ten", "Ace", "Nine", "Jack"];
+	static colors = ["Spades", "Hearts", "Clubs", "Diamonds"];
+	static values = ["Seven", "Eight", "Nine", "Jack", "Queen", "King", "Ten", "Ace"];
+	static valuesTrump = ["Seven", "Eight", "Queen", "King", "Ten", "Ace", "Nine", "Jack"];
 
 	constructor(color, value) {
+		console.assert(Card.colors.includes(color) && Card.values.includes(value), 
+			`Unsupported Card argument : ${color}, ${value}`);
 		this.color = color;
 		this.value = value;
 	}
@@ -43,8 +44,8 @@ class Card {
 	}
 
 	valueOf() {
-		var color_index = this.colors.indexOf(this.color);
-		var value_index = (this.trump ? this.valuesTrump : this.values).indexOf(this.value);
+		const color_index = Card.colors.indexOf(this.color);
+		const value_index = (this.trump ? Card.valuesTrump : Card.values).indexOf(this.value);
 		return color_index * 10 + value_index;
 	}
 
@@ -72,8 +73,7 @@ class Game {
 		if (this.player_id % 2 == 0) vue.updateScores(...data.points)
 		else vue.updateScores(data.points[1], data.points[0]);
 
-		var state = data.game_state;
-		var type = serde.datatype(state);
+		const [type, state] = serde.datatype(data.game_state);
 		if (type == "Lobby") {
 			vue.message("En attente d'autres joueurs...");
 		}
@@ -81,12 +81,12 @@ class Game {
 			this.bids = {}
 			this.phase = 1;
 			this.trumpColor = undefined;
-			for (var pbid of state.Bidding.bids) {
-				var player = this.localPlayerId(pbid.player_id);
-				this.bids[player] = serde.playerBid(pbid, state.Bidding.coinche_state);
+			for (const pbid of state.bids) {
+				const player = this.localPlayerId(pbid.player_id);
+				this.bids[player] = serde.playerBid(pbid, state.coinche_state);
 				this.turn = player;
 			}
-			this.turn = (this.first_player + state.Bidding.bids.length) % 4;
+			this.turn = (this.first_player + state.bids.length) % 4;
 			vue.displayAllBids(this.bids);
 			this.bidTurn();
 		}
@@ -94,11 +94,11 @@ class Game {
 			this.phase = 2;
 			vue.hideBidPicker();
 			this.bids = {}
-			var bid = serde.bid(state.Running.bid, state.Running.coinche_state);
-			this.bids[this.localPlayerId(state.Running.team ? 1 : 0)] = bid;
-			this.bids[this.localPlayerId(state.Running.team ? 3 : 2)] = bid;
+			let bid = serde.bid(state.bid, state.coinche_state);
+			this.bids[this.localPlayerId(state.team ? 1 : 0)] = bid;
+			this.bids[this.localPlayerId(state.team ? 3 : 2)] = bid;
 			this.trumpColor = bid.color;
-			var board = state.Running.board;
+			const board = state.board;
 			this.current_trick = board.cards.map(serde.card);
 			this.starting_player = this.localPlayerId(board.starting_player_id);
 			this.turn = (this.starting_player + this.current_trick.length) % 4;
@@ -121,15 +121,15 @@ class Game {
 	}
 
 	bidTurn() {
-		if (this.highestBid && this.highestBid.isDoubled) {
+		if (this.highestBid && this.highestBid.multiplier == 2) {
 			vue.showTurn([this.turn, (this.turn + 2) % 4], 1);
 			if (this.turn == 0 || this.turn == 2) vue.showDoubledDoubleOption();
 		}
 		else {
 			vue.showTurn(this.turn, 1);
-			var doubleAvail = this.highestBid && !this.isPlayerInMyTeam(this.highestBidPlayer)
+			const doubleAvail = this.highestBid && !this.isPlayerInMyTeam(this.highestBidPlayer)
 			if (this.turn == 0) {
-				var val = this.highestBid ? this.highestBid.value : 0;
+				const val = this.highestBid ? this.highestBid.value : 0;
 				vue.showBidPicker(val, doubleAvail);
 			}
 			if (this.turn == 2 && doubleAvail) vue.showDoubleOption();
@@ -178,12 +178,13 @@ class Game {
 				this.trumpColor = this.highestBid.color;
 				this.setCards(this.cards);
 			}
-			console.log("BID FINISHED");
 			return;
 		}
-		else this.turn = (this.turn + 1) % 4;
-		vue.hideBidPicker();
-		this.bidTurn();
+		else{
+			this.turn = (this.turn + 1) % 4;
+			vue.hideBidPicker();
+			this.bidTurn();
+		}
 	}
 
 	trickWon(winner) {
@@ -199,10 +200,10 @@ class Game {
 	}
 
 	get highestBidPlayer() {
-		var max_v = 0;
-		var max_p = -1;
-		for (var player in this.bids) {
-			var v = this.bids[player].value;
+		let max_v = 0;
+		let max_p = null;
+		for (const player in this.bids) {
+			const v = this.bids[player].value;
 			if (v > max_v) {
 				max_v = v;
 				max_p = player;
@@ -212,22 +213,23 @@ class Game {
 	}
 
 	get highestBid() {
-		return this.bids[this.highestBidPlayer];
+		const highestBidPlayer = this.highestBidPlayer;
+		return highestBidPlayer === null ? null : this.bids[highestBidPlayer];
 	}
 
 	isBidPhaseFinished() {
 		if (Object.keys(this.bids).length == 0) return false;
-		if (this.highestBid && this.highestBid.isDoubled) {
-			var p1 = (this.highestBidPlayer + 1) % 4;
-			var p3 = (this.highestBidPlayer + 3) % 4;
+		if (this.highestBid && this.highestBid.multiplier == 2) {
+			const p1 = (this.highestBidPlayer + 1) % 4;
+			const p3 = (this.highestBidPlayer + 3) % 4;
 			return (this.bids[p1] && this.bids[p3] && this.bids[p1].isPass && this.bids[p3].isPass);
 		}
-		else if (this.highestBid && this.highestBid.isDoubleDoubled) {
+		else if (this.highestBid && this.highestBid.multiplier == 4) {
 			return true;
 		}
 		else {
-			var nbPass = 0;
-			for (var p in this.bids) nbPass += this.bids[p].isPass;
+			let nbPass = 0;
+			for (const p in this.bids) nbPass += this.bids[p].isPass;
 			if (nbPass == 4) return true;
 			if (this.highestBid && nbPass == 3 && ((this.turn + 1) % 4 == this.highestBidPlayer)) return true;
 			return false;
@@ -235,26 +237,27 @@ class Game {
 	}
 
 	getPlayableCards() {
+		console.assert(this.cards !== undefined, "Can't get playable cards when cards === undefined.");
 		if (this.current_trick.length == 0) return this.cards;
-		var firstColor = this.current_trick[0].color;
-		var sameColorCards = this.cards.filter(c => c.color == firstColor);
-		var maxCardFn = (a, b) => Math.max(a, b) == a ? a : b;
+		const firstColor = this.current_trick[0].color;
+		const sameColorCards = this.cards.filter(c => c.color == firstColor);
+		const maxCardFunc = (a, b) => Math.max(a, b) == a ? a : b;
 
-		var winningCard;
+		let winningCard = null;
 		if (this.trumpColor == "AllTrump" || this.trumpColor == "NoTrump" || this.trumpColor == firstColor) {
-			winningCard = this.current_trick.filter(c => c.color == firstColor).reduce(maxCardFn);
+			winningCard = this.current_trick.filter(c => c.color == firstColor).reduce(maxCardFunc);
 		}
 		else {
-			var trumpCards = this.current_trick.filter(c => c.color == this.trumpColor);
-			if (trumpCards.length) winningCard = trumpCards.reduce(maxCardFn);
-			else winningCard = this.current_trick.filter(c => c.color == firstColor).reduce(maxCardFn);
+			const trumpCards = this.current_trick.filter(c => c.color == this.trumpColor);
+			if (trumpCards.length) winningCard = trumpCards.reduce(maxCardFunc);
+			else winningCard = this.current_trick.filter(c => c.color == firstColor).reduce(maxCardFunc);
 		}
 
-		var winningPlayer = this.current_trick.map((card) => card.valueOf()).indexOf(winningCard.valueOf());
+		const winningPlayer = this.current_trick.map((card) => card.valueOf()).indexOf(winningCard.valueOf());
 
 		if (sameColorCards.length) {
 			if (this.trumpColor == "AllTrump" || this.trumpColor == firstColor) {
-				var above = sameColorCards.filter((card) => card.valueOf() > winningCard.valueOf());
+				const above = sameColorCards.filter((card) => card.valueOf() > winningCard.valueOf());
 				if (above.length) return above;
 				else return sameColorCards;
 			}
@@ -267,12 +270,12 @@ class Game {
 					return this.cards;
 				}
 				else {
-					var myTrumps = this.cards.filter((card) => card.color == this.trumpColor);
+					const myTrumps = this.cards.filter((card) => card.color == this.trumpColor);
 					if (myTrumps.length) {
 						if (this.trumpColor == firstColor) return this.cards;
 						else {
 							if (winningCard.color == this.trumpColor) {
-								var above = myTrumps.filter((card) => card.valueOf() > winningCard.valueOf());
+								const above = myTrumps.filter((card) => card.valueOf() > winningCard.valueOf());
 								if (above.length) return above;
 								else return myTrumps;
 							}

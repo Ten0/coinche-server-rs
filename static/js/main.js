@@ -6,8 +6,8 @@ window.addEventListener("load", function () {
 
 	vue = new Vue();
 
-	var url = new URL(location);
-	var user = url.searchParams.get("user");
+	const url = new URL(location);
+	const user = url.searchParams.get("user");
 	if (!user) {
 		alert("Please enter an username in the url : [...].html?user=<your name>");
 	}
