@@ -135,7 +135,7 @@ class Vue {
 			elt = this.genCard(player, card);
 			if (!forceCreate) $(this.handOfPlayer(player).children(".card")[0]).remove();
 		}
-		elt.addClass(this.sideOfPlayer[player]);
+		elt.addClass(this.sideOfPlayer(player));
 		elt.addClass("visible");
 		elt.addClass("played");
 		elt.removeClass("playable");
