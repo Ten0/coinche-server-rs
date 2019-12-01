@@ -19,7 +19,6 @@ pub struct RoundPoints {
 	pub bid: Bid,
 	pub scored_points: [usize; 2],
 	pub team: bool,
-
 }
 
 #[derive(Debug, Serialize)]
@@ -203,34 +202,40 @@ impl Game {
 	pub fn try_end(&mut self) {
 		if let GameState::Running(running) = &self.game_state {
 			if running.tricks.len() == (32 / 4) {
-				let mut team_points: [f64; 2] = [0., 0.];
-				let mut team_capot: [bool; 2] = [true, true];
+				let mut scored_points_f: [f64; 2] = [0., 0.];
+				let mut capot: [bool; 2] = [true, true];
 				for trick in running.tricks.iter() {
 					let winning_team_id = Player::team(trick.winner_id);
-					team_points[winning_team_id as usize] +=
+					scored_points_f[winning_team_id as usize] +=
 						trick.cards.iter().map(|c| c.points(running.bid.trump)).sum::<f64>();
-					team_capot[!winning_team_id as usize] = false;
+					capot[!winning_team_id as usize] = false;
 				}
-				team_points[Player::team(running.tricks.last().unwrap().winner_id) as usize] += 10.;
+				let mut scored_points: [usize; 2] = [0, 0];
+				scored_points[0] = scored_points_f[0].floor() as usize;
+				scored_points[1] = scored_points_f[1].floor() as usize;
+				scored_points[Player::team(running.tricks.last().unwrap().winner_id) as usize] += 10;
 				if let Some(belote_player) = running.belote_player {
-					team_points[Player::team(belote_player) as usize] += 20.;
+					scored_points[Player::team(belote_player) as usize] += 20;
 				}
-				let taking_team_points = team_points[running.team as usize].floor() as usize;
-				let def_team_points = team_points[!running.team as usize].floor() as usize;
-				let taking_team_capot = team_capot[running.team as usize];
+				let taking_team_points = scored_points[running.team as usize];
+				let def_team_points = scored_points[!running.team as usize];
+				let taking_team_capot = capot[running.team as usize];
 				let (taking_points, def_points) = running.bid.score.points(
 					taking_team_points,
 					def_team_points,
 					taking_team_capot,
 					running.coinche_state,
 				);
-				self.points[running.team as usize] += taking_points;
-				self.points[!running.team as usize] += def_points;
-				self.round_points.push(RoundPoints{
+				let mut round_points = [0, 0];
+				round_points[running.team as usize] = taking_points;
+				round_points[!running.team as usize] = def_points;
+				self.points[0] += round_points[0];
+				self.points[1] += round_points[1];
+				self.round_points.push(RoundPoints {
 					team: running.team,
 					bid: running.bid,
-					points: [taking_points, def_points],
-					scored_points: [taking_team_points, def_team_points]
+					points: round_points,
+					scored_points,
 				});
 				self.game_state = GameState::Lobby;
 				if !self.try_bidding_phase() {
