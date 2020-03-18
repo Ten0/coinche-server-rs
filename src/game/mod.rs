@@ -220,10 +220,12 @@ impl Game {
 				let taking_team_points = scored_points[running.team as usize];
 				let def_team_points = scored_points[!running.team as usize];
 				let taking_team_capot = capot[running.team as usize];
+				let def_team_capot = capot[!running.team as usize];
 				let (taking_points, def_points) = running.bid.score.points(
 					taking_team_points,
 					def_team_points,
 					taking_team_capot,
+					def_team_capot,
 					running.coinche_state,
 				);
 				let mut round_points = [0, 0];

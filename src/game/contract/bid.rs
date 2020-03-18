@@ -41,9 +41,9 @@ pub enum BidScore {
 }
 
 impl BidScore {
-	pub fn required_points(self) -> Option<usize> {
+	pub fn required_points(self) -> usize {
 		use BidScore::*;
-		Some(match self {
+		match self {
 			_80 => 80,
 			_90 => 90,
 			_100 => 100,
@@ -55,28 +55,32 @@ impl BidScore {
 			_160 => 160,
 			_170 => 170,
 			_180 => 180,
-			Capot => return None,
-		})
+			Capot => 250,
+		}
 	}
 
 	pub fn points(
 		self,
-		taking_team_points: usize,
-		def_team_points: usize,
+		mut taking_team_points: usize,
+		mut def_team_points: usize,
 		taking_team_capot: bool,
+		def_team_capot: bool,
 		coinche_state: CoincheState,
 	) -> (usize, usize) {
-		let (success, points_base) = match self.required_points() {
-			Some(required_points) => (taking_team_points > required_points, required_points),
-			None => (taking_team_capot, 250),
-		};
-		match (success, coinche_state) {
-			(true, CoincheState::No) => (points_base + taking_team_points, def_team_points),
-			(true, CoincheState::Coinche { .. }) => (points_base * 2 + taking_team_points, 0),
-			(true, CoincheState::Surcoinche { .. }) => (points_base * 4 + taking_team_points, 0),
-			(false, CoincheState::No) => (0, 160 + points_base),
-			(false, CoincheState::Coinche { .. }) => (0, 160 + points_base * 2),
-			(false, CoincheState::Surcoinche { .. }) => (0, 160 + points_base * 4),
+		let required_points = self.required_points();
+		if taking_team_capot {
+			taking_team_points = 250;
+		}
+		if def_team_capot {
+			def_team_points = 250;
+		}
+		match (taking_team_points >= required_points, coinche_state) {
+			(true, CoincheState::No) => (required_points + taking_team_points, def_team_points),
+			(true, CoincheState::Coinche { .. }) => (required_points * 2 + taking_team_points, 0),
+			(true, CoincheState::Surcoinche { .. }) => (required_points * 4 + taking_team_points, 0),
+			(false, CoincheState::No) => (0, 160 + required_points),
+			(false, CoincheState::Coinche { .. }) => (0, 160 + required_points * 2),
+			(false, CoincheState::Surcoinche { .. }) => (0, 160 + required_points * 4),
 		}
 	}
 }
