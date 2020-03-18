@@ -12,7 +12,7 @@ pub struct Bid {
 	pub score: BidScore,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialOrd, Ord, PartialEq, Eq)]
 pub enum BidScore {
 	#[serde(rename = "80")]
 	_80,

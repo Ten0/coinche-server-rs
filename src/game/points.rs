@@ -9,7 +9,7 @@ impl Card {
 			(YesOrAllTrump, Nine) => 14.,
 			(NoTrump, Jack) | (No, Jack) => 2.,
 			(NoTrump, Nine) | (No, Nine) => 0.,
-			(NoTrump, Ace) => 20.,
+			(NoTrump, Ace) => 19.,
 			(YesOrAllTrump, Ace) | (No, Ace) => 11.,
 			(_, Ten) => 10.,
 			(_, King) => 4.,

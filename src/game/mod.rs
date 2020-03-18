@@ -86,7 +86,7 @@ impl Game {
 	}
 
 	pub fn player_ids(&self) -> std::ops::Range<usize> {
-		(0..self.players.len())
+		0..self.players.len()
 	}
 
 	pub fn players<'a>(&'a self) -> impl Iterator<Item = PlayerPtr<&'a Game>> {

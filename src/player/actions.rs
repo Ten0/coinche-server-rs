@@ -18,6 +18,12 @@ impl<G: DerefMut<Target = Game>> PlayerPtr<G> {
 							player_id: self.player_id,
 							bid,
 						};
+						match (bid.map(|b| b.score), bids.last().and_then(|b| b.bid).map(|b| b.score)) {
+							(Some(bid), Some(prev_bid)) if bid <= prev_bid => {
+								return Err(err_msg("New bid has to be greater than previous bid"))
+							}
+							_ => {}
+						}
 						bids.push(player_bid);
 						let can_start_game = bids.len() >= 4 && bids.iter().rev().take(3).all(|b| b.bid.is_none());
 						for player in self.game.players() {
