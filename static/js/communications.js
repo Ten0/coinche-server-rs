@@ -115,7 +115,7 @@ const serde = {
 	},
 	bid: function (obj, cs) {
 		if (obj === null) return new Bid("pass");
-		const val = obj.score === "C" ? 250 : parseInt(obj.score);
+		const val = obj.score === "Capot" ? 250 : parseInt(obj.score);
 		let [trump, color] = serde.datatype(obj.trump);
 		if (trump == "Suit") trump = color;
 		let bid = new Bid("bid", val, trump);
