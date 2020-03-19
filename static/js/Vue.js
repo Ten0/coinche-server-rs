@@ -170,19 +170,82 @@ class Vue {
 	displayBid(player, bid) {
 		if (this.freezed) return this.push("displayBid", player, bid);
 		let elt = this.bidOfPlayer(player);
-		elt.css("color", "black");
+		let [html, color] = this.bidHtml(bid);
+		elt.css("color", color);
+		elt.html(html);
+		elt.show();
+	}
+
+	bidHtml(bid){
+		var color = "black";
+		var html = "";
 		if (bid.isPass || bid.isDouble || bid.isDoubledDouble) {
-			if (bid.isPass) elt.html("-");
-			if (bid.isDouble) elt.html("C");
-			if (bid.isDoubleDoubled) elt.html("CC");
+			if (bid.isPass) html = "-";
+			if (bid.isDouble) html = "C";
+			if (bid.isDoubleDoubled) html = "CC";
 		}
 		else {
-			if (bid.color == "Diamonds" || bid.color == "Hearts") elt.css("color", "red");
-			elt.html(bid.valueRepr + " " + colorsHtml[bid.color]);
-			if (bid.multiplier == 2) elt.append("<span>C</span>");
-			if (bid.multiplier == 4) elt.append("<span>CC</span>");
+			if (bid.color == "Diamonds" || bid.color == "Hearts") color = "red";
+			html = bid.valueRepr + " " + colorsHtml[bid.color];
+			if (bid.multiplier == 2) html += "<span>C</span>";
+			if (bid.multiplier == 4) html += "<span>CC</span>";
 		}
-		elt.show();
+		return [html, color];
+	}
+
+	roundResultHtml(round_result, team, extended){
+		let bid = serde.bid(round_result.bid);
+		let [bid_html, bid_color] = this.bidHtml(bid);
+		let points = round_result.points
+		let bid_team = round_result.team ? 1 : 0;
+		let won = points[team] > points[1 - team];
+
+		let tds = [];
+		tds.push(createElt("td", bid_html, {
+			color : bid_color,
+			fontStyle: bid_team == team ? "normal" : "italic"
+		}));
+		tds.push(createElt("td", points[team]));
+		tds.push(createElt("td", points[1 - team]));
+		
+		let tr_class = won ? "won" : "lost";
+		let main_tr = createElt("tr", tds, {cursor: "pointer"}, {class: tr_class});
+		
+		$(main_tr).click(function(){
+			let elt = $(this);
+			if(elt.hasClass("extended-first")){
+				elt.removeClass("extended-first");
+				elt.next().hide();
+				elt.next().next().hide();
+			}
+			else{
+				elt.addClass("extended-first")
+				elt.next().show();
+				elt.next().next().show();
+			}
+		})
+		let tr_bid = createElt("tr", [
+			createElt("td", "Annonce"),
+			createElt("td", bid_team == team ? bid_html : "", {color: bid_color}),
+			createElt("td", bid_team != team ? bid_html : "", {color: bid_color})
+		], {display: "none"}, {class: "extented"});
+		let tr_scored = createElt("tr", [
+			createElt("td", "Faits"),
+			createElt("td", round_result.scored_points[team], {fontWeight: won ? "bold" : "normal"}),
+			createElt("td", round_result.scored_points[1 - team], {fontWeight: won ? "normal" : "bold"})
+		], {display: "none"}, {class: "extented-last"});
+		return [main_tr, tr_bid, tr_scored];
+	}
+
+	updateScoreboard(points, round_results, team){
+		if (this.freezed) return this.push("updateScoreboard", points, round_results, team);
+		$("#last-trick").empty();
+		$($("th")[1]).html(points[team]);
+		$($("th")[2]).html(points[1 - team]);
+		$("tbody").html("");
+		for(let round_result of round_results){
+			$("tbody").append(this.roundResultHtml(round_result, team));
+		}
 	}
 
 	showBidPicker(minimumBid, doubleAvail) {
@@ -275,13 +338,6 @@ class Vue {
 		document.title = "Coinche - A toi de jouer !"
 	}
 
-	updateScores(our_score, their_score) {
-		if (this.freezed) return this.push("updateScores", our_score, their_score);
-		$("#last-trick").empty();
-		$("#us").html(our_score);
-		$("#them").html(their_score);
-	}
-
 	message(msg, ms) {
 		console.log("message de la vue :", msg);
 	}
@@ -292,4 +348,16 @@ class Vue {
 		}
 	}
 
+}
+
+function createElt(tag, content, css, attrs){
+	if(content === undefined) content = "";
+	var elt = $("<" + tag + "></" + tag + ">");
+	if(Array.isArray(content) == "string"){
+		for(e of content) elt.append(e);
+	}
+	else elt.append(content);
+	if (css !== undefined) elt.css(css);
+	if (attrs !== undefined) elt.attr(attrs);
+	return elt;
 }

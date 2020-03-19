@@ -70,9 +70,7 @@ class Game {
 		this.players = data.players;
 		vue.showNames(this.players);
 
-		// update scores
-		if (this.player_id % 2 == 0) vue.updateScores(...data.points)
-		else vue.updateScores(data.points[1], data.points[0]);
+		vue.updateScoreboard(data.points, data.round_points, this.player_id % 2);
 
 		const [type, state] = serde.datatype(data.game_state);
 		if (type == "Lobby") {

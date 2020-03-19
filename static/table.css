@@ -248,18 +248,79 @@
 
 table#score, #score tr, #score td{
 	border: solid 1px black;
-	text-align: center;
 }
 
 table#score{
 	margin-top: 300px;
 	margin-left: auto;
 	margin-right: auto;
+	border-spacing: 0;
+    border: 2px solid black;
+}
+
+#score td, #score th{
+	font-size: 16px;
+	padding: 5px;
+	width: 80px;
+	border-right: 1px solid black;
+	border-top: 1px solid black;
+	border-right: 1px solid #aaaaaa;
+	text-align: center;
+}
+
+table#score tbody,
+table#score tfoot { display: block; }
+
+#score tfoot tr th { 
+    height: 30px;
+	line-height: 30px;
 }
 
 #score td{
-	
-	font-size: 26px;
-	padding: 5px;
-	width: 80px;
+	height: 25px;
+	line-height: 25px;
+	text-shadow: white 0 0 2px;
+}
+
+#score tfoot tr th:last-child {
+	width: 98px;
+}
+
+table#score tbody {
+    max-height: 179px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#score tbody {
+    border-top: 2px solid black;
+    border-bottom: 2px solid black; 
+}
+
+#score tbody td:last-child,
+#score tfoot th:last-child {
+    border-right: none;
+}
+
+#score tr.extended-first td{
+	border-top: 2px solid black;
+	border-bottom: 1px solid #aaaaaa;
+}
+
+#score tr.extended td{
+	border-top: 1px solid #aaaaaa;
+	border-bottom: 1px solid #aaaaaa;
+}
+
+#score tr.extended-last td{
+	border-bottom: 2px solid black;
+	border-top: 1px solid #aaaaaa;
+}
+
+#score tr.won{
+	background-color: #aaffaa;
+}
+
+#score tr.lost{
+	background-color: #ffaaaa;
 }
