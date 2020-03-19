@@ -18,6 +18,7 @@ class Bid {
 		this.multiplier *= 2;
 	}
 
+	get valueRepr() { return this.value == 250 ? "Cpt" : value }
 	get isPass() { return this.type == "pass"; }
 	get isDouble() { return this.type == "double"; }
 	get isDoubledDouble() { return this.type == "doubled-double"; }

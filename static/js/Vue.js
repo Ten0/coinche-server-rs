@@ -178,7 +178,7 @@ class Vue {
 		}
 		else {
 			if (bid.color == "Diamonds" || bid.color == "Hearts") elt.css("color", "red");
-			elt.html(bid.value + " " + colorsHtml[bid.color]);
+			elt.html(bid.valueRepr + " " + colorsHtml[bid.color]);
 			if (bid.multiplier == 2) elt.append("<span>C</span>");
 			if (bid.multiplier == 4) elt.append("<span>CC</span>");
 		}
@@ -196,12 +196,17 @@ class Vue {
 		$("#bid-picker label").removeClass("disabled");
 		$("#bid-picker input").removeAttr("disabled");
 
-		for (let elt of $("#bid-value-picker label")) {
-			elt = $(elt)
-			const val = $("#" + elt.attr("for")).val();
-			if (val <= minimumBid) {
-				$("#" + elt.attr("for")).attr("disabled", "");
-				elt.addClass("disabled");
+		if(minimumBid == 250){
+			this.disableAllBids();
+		}
+		else{
+			for (let elt of $("#bid-value-picker label")) {
+				elt = $(elt)
+				const val = $("#" + elt.attr("for")).val();
+				if (val <= minimumBid) {
+					$("#" + elt.attr("for")).attr("disabled", "");
+					elt.addClass("disabled");
+				}
 			}
 		}
 	}
