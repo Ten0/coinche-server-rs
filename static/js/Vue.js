@@ -84,6 +84,10 @@ class Vue {
 		return $(`#${this.sideOfPlayer(player)}-name`);
 	}
 
+	beloteOfPlayer(player){
+		return $(`#${this.sideOfPlayer(player)}-belote`);
+	}
+
 	genCard(player, card) {
 		const side = this.sideOfPlayer(player);
 		let elt;
@@ -123,12 +127,12 @@ class Vue {
 	displayTrick(starting_player, cards) {
 		if (this.freezed) return this.push("displayTrick", starting_player, cards);
 		for (let i = 0; i < cards.length; i++) {
-			this.playCard((starting_player + i) % 4, cards[i], true);
+			this.playCard((starting_player + i) % 4, cards[i], null, true);
 		}
 	}
 
-	playCard(player, card, forceCreate) {
-		if (this.freezed) return this.push("playCard", player, card, forceCreate);
+	playCard(player, card, belote, forceCreate) {
+		if (this.freezed) return this.push("playCard", player, card, belote, forceCreate);
 		let elt;
 		if (player == 0 && !forceCreate) elt = $(".card#" + card.toString());
 		else {
@@ -141,6 +145,11 @@ class Vue {
 		elt.removeClass("playable");
 		elt.appendTo("#current-trick");
 		elt.unbind("click");
+		if(belote !== null){
+			this.beloteOfPlayer(player).html(belote);
+			this.beloteOfPlayer(player).show();
+			this.beloteOfPlayer(player).fadeOut(3000);
+		}
 	}
 
 	makeCardsPlayable(playableCards) {

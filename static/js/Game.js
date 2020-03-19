@@ -158,11 +158,11 @@ class Game {
 		else vue.makeCardsUnplayable();
 	}
 
-	playCard(player, card) {
+	playCard(player, card, belote) {
 		this.turn = (this.turn + 1) % 4;
 		this.current_trick.push(card);
 		if (player == 0) this.removeCard(card);
-		vue.playCard(player, card);
+		vue.playCard(player, card, belote);
 		if(this.current_trick.length < 4) this.cardTurn();
 	}
 

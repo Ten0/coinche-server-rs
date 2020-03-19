@@ -89,7 +89,7 @@ const messageHandlers = {
 	PlayedCard: function (data) {
 		const card = new Card(data.card.suit, data.card.value);
 		const player = game.localPlayerId(data.player_id);
-		game.playCard(player, card);
+		game.playCard(player, card, data.belote_rebelote);
 	},
 
 	Trick: function (data) {

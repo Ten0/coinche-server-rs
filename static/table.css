@@ -162,6 +162,39 @@
 	background-color: darkblue;
 }
 
+/* Belote */
+
+.belote{
+	position: absolute;
+	background-color: white;
+	border: solid 1px black;
+	padding: 14px;
+	border-radius : 100px / 65px;
+	font-size: 20px;
+	display: none;
+}
+
+#bottom-belote{
+	left: 45%;
+	bottom: 24%;
+}
+
+#top-belote{
+	left: 45%;
+	top: 24%;
+}
+
+#right-belote{
+	right: 26%;
+	top: 47%;
+}
+
+#left-belote{
+	left: 26%;
+	top: 47%;
+}
+
+
 /* Bid */
 
 .bid{
