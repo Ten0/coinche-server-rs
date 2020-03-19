@@ -255,6 +255,7 @@ class Vue {
 
 	showTurn(turn, phase) {
 		if (this.freezed) return this.push("showTurn", turn, phase);
+		document.title = "Coinche";
 		$(".name").removeClass("turn");
 		$(".hand").removeClass("turn");
 		if (phase == 1) {
@@ -262,9 +263,16 @@ class Vue {
 			else {
 				this.nameEltOfPlayer(turn[0]).addClass("turn");
 				this.nameEltOfPlayer(turn[1]).addClass("turn");
+				if(turn[0] == 0 || turn[1] == 0) this.notifyMyTurn();
 			}
 		}
 		if (phase == 2) this.handOfPlayer(turn).addClass("turn");
+		if (turn == 0) this.notifyMyTurn();
+	}
+
+	notifyMyTurn(){
+		$("#turn_sound")[0].play();
+		document.title = "Coinche - A toi de jouer !"
 	}
 
 	updateScores(our_score, their_score) {

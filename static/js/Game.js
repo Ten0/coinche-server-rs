@@ -165,7 +165,7 @@ class Game {
 		this.current_trick.push(card);
 		if (player == 0) this.removeCard(card);
 		vue.playCard(player, card);
-		this.cardTurn();
+		if(this.current_trick.length < 4) this.cardTurn();
 	}
 
 	removeCard(card) {
