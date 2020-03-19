@@ -24,4 +24,8 @@ window.addEventListener("load", function () {
 		alert("Could not parse url");
 	}
 
+	// ping the server every 20 minutes so that heroku doesn't shut down the server
+	window.setInterval(function(){
+		$.get("index.html", {"useless": Math.random()});
+	}, 20*60*1000);
 });
