@@ -1,5 +1,4 @@
-use std::cmp::Ordering;
-use std::fmt;
+use std::{cmp::Ordering, fmt};
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum Suit {

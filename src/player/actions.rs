@@ -1,7 +1,6 @@
 use crate::prelude::*;
 
-use std::cmp::Ordering;
-use std::ops::DerefMut;
+use std::{cmp::Ordering, ops::DerefMut};
 
 impl<G: DerefMut<Target = Game>> PlayerPtr<G> {
 	pub fn bid(&mut self, bid: Option<Bid>) -> crate::Result<()> {

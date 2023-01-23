@@ -2,7 +2,7 @@
 name = "coinche"
 version = "0.1.0"
 authors = ["Thomas BESSOU <thomas.bessou@hotmail.fr>"]
-edition = "2018"
+edition = "2021"
 publish = false
 
 [profile]
@@ -10,18 +10,17 @@ publish = false
 release = { debug = 1 }
 
 [dependencies]
-actix = "0.8"
-actix-files = "0.1"
-actix-rt = "0.2"
-actix-web = "1"
-actix-web-actors = "1"
+actix = "0.13"
+actix-files = "0.6"
+actix-rt = "2"
+actix-web = "4"
+actix-web-actors = "4"
 chrono = "0.4"
-ctrlc = { version = "3", features = ['termination'] }
 failure = "0.1"
-fern = { version = "0.5", features = ['colored'] }
-futures = "0.1"
+fern = { version = "0.6", features = ['colored'] }
+futures = "0.3"
 log = "0.4"
-rand = "0.7"
+rand = "0.8"
 serde = "1"
 serde_derive = "1"
 serde_json = "1"

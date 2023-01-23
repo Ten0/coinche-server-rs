@@ -13,15 +13,22 @@ pub type Result<T> = std::result::Result<T, failure::Error>;
 
 mod prelude {
 	use super::*;
-	pub use cards::*;
-	pub use contract::*;
-	pub use game::*;
-	pub use messages::{ClientMessage, ServerMessage};
-	pub use player::*;
-	pub use server::websocket::WebSocket;
+	pub use {
+		cards::*,
+		contract::*,
+		game::*,
+		messages::{ClientMessage, ServerMessage},
+		player::*,
+		server::websocket::WebSocket,
+	};
 
-	pub use actix::Addr;
-	pub use failure::err_msg;
-	pub use std::borrow::Borrow;
-	pub use std::sync::{Arc, Mutex, MutexGuard};
+	pub use {
+		actix::Addr,
+		failure::err_msg,
+		futures::prelude::*,
+		std::{
+			borrow::Borrow,
+			sync::{Arc, Mutex, MutexGuard},
+		},
+	};
 }

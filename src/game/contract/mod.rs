@@ -7,5 +7,4 @@ pub struct Contract {
 	pub trump: Trump,
 }
 
-pub use bid::*;
-pub use trump::*;
+pub use {bid::*, trump::*};

@@ -2,8 +2,7 @@ use crate::prelude::*;
 
 impl Card {
 	pub fn points(self, trump: Trump) -> f64 {
-		use TrumpMatch::*;
-		use Value::*;
+		use {TrumpMatch::*, Value::*};
 		let base: f64 = match (trump.matches(self.suit), self.value) {
 			(YesOrAllTrump, Jack) => 20.,
 			(YesOrAllTrump, Nine) => 14.,

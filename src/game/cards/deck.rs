@@ -1,5 +1,4 @@
-use rand;
-use rand::seq::SliceRandom;
+use rand::{self, seq::SliceRandom};
 
 use super::card::{Card, Suit, Value};
 
